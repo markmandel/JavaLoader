@@ -27,9 +27,9 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 <!------------------------------------------- PUBLIC ------------------------------------------->
 <cffunction name="init" hint="Constructor" access="public" returntype="JavaLoader" output="false">
-	<cfargument name="loadPaths" hint="An array of diretories, or paths to .jar files to load into the classloader" type="array" default="#ArrayNew(1)#" required="no">
+	<cfargument name="loadPaths" hint="An array of directories of classes, or paths to .jar files to load" type="array" default="#ArrayNew(1)#" required="no">
 	<cfargument name="loadColdFusionClassPath" hint="Loads the ColdFusion libraries" type="boolean" required="No" default="false">
-	<cfargument name="loadedClassPathBias" hint="If loading classes on top of ColdFusion classpath, load the loaded classes before searching the CF ClassPath" type="boolean" required="No" default="true">
+	<cfargument name="loadedClassPathBias" hint="If loading classes on top of a parent classpath, search the loaded classes before searching the parent ClassPath" type="boolean" required="No" default="true">
 	<cfargument name="parentClassLoader" hint="(Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader" type="any" default="" required="false">
 
 	<cfscript>
