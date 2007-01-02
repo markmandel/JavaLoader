@@ -1,6 +1,6 @@
 JavaLoader v0.3
 Author: Mark Mandel
-Date: 13 December 2006
+Date: 3rd January 2007
 
 Installation
 ----------------
@@ -14,9 +14,9 @@ Utilisation
 To access the JavaLoader CFC, you call createObject on it like so:
 
 createObject("component", "javaloader.JavaLoader").init(loadPaths, 
-														[loadColdFusionClassPath, 
-														loadedClassPathBias, 
-														parentClassLoader]);
+														[loadColdFusionClassPath,] 
+														[loadedClassPathBias,] 
+														[parentClassLoader]);
 
 There are four arguments that possible to configure how and what the JavaLoader loads.
 
@@ -42,7 +42,9 @@ you load in, log4j for example, when retrieving log4j from JavaLoader, you will
 recieve the version that was loaded, not the ColdFusion library version.
 
 * parentClassLoader (null)
-(Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader
+(Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader.
+Note - when setting loadColdFusionClassPath to 'true', this value is overwritten with the
+ColdFusion classloader.
 
 
 To create an instance of a Java Class, you then only need to call:
