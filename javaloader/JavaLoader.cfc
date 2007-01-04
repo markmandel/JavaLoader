@@ -128,7 +128,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			//let's not use the lib's that have the same name, but a lower datestamp
 			if(NOT ListFind(jarList, libName))
 			{
-				ArrayAppend(aJars, directory & "/" & name);
+				ArrayAppend(aJars, path & "/" & name);
 				jarList = ListAppend(jarList, libName);
 			}
 		</cfscript>
