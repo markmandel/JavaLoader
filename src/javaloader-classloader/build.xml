@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="transfer-objectcache" default="dist" basedir=".">
+	<property name="src" location="."/>
+	<property name="build" location="."/>
+	<property name="dist" location="../../javaloader/lib/"/>	
+    
+  <target name="compile" depends="cleanALL" description="compile">
+  	<javac srcdir="${src}" destdir="${build}" debug="true" debuglevel="lines,vars,source"/>
+  	<antcall target="jarBuild"></antcall>
+  </target>
+    
+  <target name="dist" depends="compile" description="generate the distribution" >
+  	<delete file="${dist}/classloader-src.zip"/>
+    <zip destfile="${dist}/classloader-src.zip">
+      <fileset dir="${src}">
+      	<exclude name="**/*.class"/>
+      	<exclude name="**/*._java"/>
+      	<exclude name=".settings/**"/>
+      	<exclude name=".classpath"/>
+      	<exclude name=".project"/>
+	  </fileset>
+    </zip>
+  </target>
+  
+	
+  <target name="jarBuild">
+  	<tstamp>
+  		<format property="DSTAMP" pattern="yyyyMMddHHmmss"/>
+    </tstamp>
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist}/classloader-${DSTAMP}.jar" basedir="${build}"/>  	
+  </target>	
+<!--
+  <target name="jarBuild">
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist}/classloader0.jar" basedir="${src}" />
+  </target>
+ -->
+	
+  <target name="clean" description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+  <delete>
+    <fileset dir="${build}" includes="**/*.class"/>
+  </delete>
+  </target>
+	
+  <target name="cleanALL" depends="clean">
+  	<delete>
+		<fileset dir="${dist}" includes="*.jar"/>
+	</delete>
+  </target>
+	
+</project>
