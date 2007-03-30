@@ -23,24 +23,45 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 <cfscript>
 	instance = StructNew();
+	instance.static.uuid = "A0608BEC-0AEB-B46A-0E1E1EC5F3CE7C9C";
 </cfscript>
 
 <!------------------------------------------- PUBLIC ------------------------------------------->
 <cffunction name="init" hint="Constructor" access="public" returntype="JavaLoader" output="false">
 	<cfargument name="loadPaths" hint="An array of directories of classes, or paths to .jar files to load" type="array" default="#ArrayNew(1)#" required="no">
 	<cfargument name="loadColdFusionClassPath" hint="Loads the ColdFusion libraries" type="boolean" required="No" default="false">
-	<cfargument name="loadedClassPathBias" hint="If loading classes on top of a parent classpath, search the loaded classes before searching the parent ClassPath" type="boolean" required="No" default="true">
 	<cfargument name="parentClassLoader" hint="(Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader" type="any" default="" required="false">
 
 	<cfscript>
 		var iterator = arguments.loadPaths.iterator();
-		var Array = createObject("java", "java.lang.reflect.Array");
-		var Class = createObject("java", "java.lang.Class");
-		var URLs = Array.newInstance(Class.forName("java.net.URL"), JavaCast("int", ArrayLen(arguments.loadPaths)));
 		var file = 0;
 		var classLoader = 0;
-		var counter = 0;
-		var javaloader = 0;
+		var networkClassLoaderClass = 0;
+		var networkClassLoaderProxy = 0;
+
+		if(arguments.loadColdFusionClassPath)
+		{
+			arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
+			//arguments.parentClassLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
+			//can't use the above, it doesn't have the CF stuff in it.
+		}
+
+		//hackNetworkLoaderIntoClassPath();
+		ensureNetworkClassLoaderOnServerScope();
+
+		//classLoader = createObject("java", "com.compoundtheory.classloader0.NetworkClassLoader").init();
+		networkClassLoaderClass = getServerURLClassLoader().loadClass("com.compoundtheory.classloader.NetworkClassLoader");
+
+		networkClassLoaderProxy = createObject("java", "coldfusion.runtime.java.JavaProxy").init(networkClassLoaderClass);
+
+		if(isObject(arguments.parentClassLoader))
+		{
+			classLoader = networkClassLoaderProxy.init(arguments.parentClassLoader);
+		}
+		else
+		{
+			classLoader = networkClassLoaderProxy.init();
+		}
 
 		while(iterator.hasNext())
 		{
@@ -49,37 +70,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			{
 				throw("PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
 			}
-			Array.set(URLs, JavaCast("int", counter), file.toURL());
-			counter = counter + 1;
-		}
-
-		if(arguments.loadColdFusionClassPath)
-		{
-			arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
-		}
-
-		if(arguments.loadedClassPathBias)
-		{
-			javaloader = createObject("component", "JavaLoader").init(loadPaths=queryJars(), loadedClassPathBias=false);
-			if(isObject(arguments.parentClassLoader))
-			{
-				classLoader = javaloader.create("com.compoundtheory.classloader.ChildBiasURLClassLoader").init(URLs, arguments.parentClassLoader);
-			}
-			else
-			{
-				classLoader = javaloader.create("com.compoundtheory.classloader.ChildBiasURLClassLoader").init(URLs);
-			}
-		}
-		else
-		{
-			if(isObject(arguments.parentClassLoader))
-			{
-				classLoader = createObject("java", "java.net.URLClassLoader").init(URLs, arguments.parentClassLoader);
-			}
-			else
-			{
-				classLoader = createObject("java", "java.net.URLClassLoader").init(URLs);
-			}
+			classLoader.addUrl(file.toURL());
 		}
 
 		//pass in the system loader
@@ -103,12 +94,47 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "0.3">
+	<cfreturn "0.3.b">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
+
+
+<cffunction name="ensureNetworkClassLoaderOnServerScope"
+			hint="makes sure there is a URL class loader on the server scope that can load me up some networkClassLoader goodness"
+			access="public" returntype="void" output="false">
+	<cfscript>
+		var Class = createObject("java", "java.lang.Class");
+		var Array = createObject("java", "java.lang.reflect.Array");
+		var jars = queryJars();
+		var iterator = jars.iterator();
+		var file = 0;
+		var urls = Array.newInstance(Class.forName("java.net.URL"), ArrayLen(jars));
+		var counter = 0;
+		var urlClassLoader = 0;
+		var key = instance.static.uuid & "." & getVersion();
+		//server scope uuid
+
+		//we have it already? escape.
+		if(StructKeyExists(server, key))
+		{
+			return;
+		}
+
+		while(iterator.hasNext())
+		{
+			Array.set(urls, counter, createObject("java", "java.io.File").init(iterator.next()).toURL());
+			counter = counter + 1;
+		}
+
+		urlClassLoader = createObject("java", "java.net.URLClassLoader").init(urls);
+
+		//put it on the server scope
+		server[key] = urlClassLoader;
+	</cfscript>
+</cffunction>
 
 <cffunction name="queryJars" hint="pulls a query of all the jars in the /resources/lib folder" access="private" returntype="array" output="false">
 	<cfscript>
@@ -121,7 +147,6 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	</cfscript>
 
 	<cfdirectory action="list" name="qJars" directory="#path#" filter="*.jar" sort="name desc"/>
-
 	<cfloop query="qJars">
 		<cfscript>
 			libName = ListGetAt(name, 1, "-");
@@ -136,6 +161,78 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 	<cfreturn aJars>
 </cffunction>
+
+<cffunction name="getServerURLClassLoader" hint="returns the server URL class loader" access="private" returntype="any" output="false">
+	<cfreturn server[instance.static.uuid & "." & getVersion()] />
+</cffunction>
+
+<!---
+<cffunction name="hackNetworkLoaderIntoClassPath" hint="pushes the network class loader into the class path, via some hackery" access="public" returntype="void" output="false">
+	<cfscript>
+		var classLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
+		//var classLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
+		var path = getDirectoryFromPath(getMetaData(this).path) & "lib/";
+		var Array = createObject("java", "java.lang.reflect.Array");
+		var loaderClass = classLoader.loadClass("java.net.URLClassLoader");
+		var objectClass = classLoader.loadClass("java.lang.Object");
+		var parameters = Array.newInstance(loaderClass.getClass(), 1);
+		var file = createObject("java", "java.io.File").init(path & "classloader0.jar");
+		var url = file.toURL();
+
+		var method = 0;
+		var objectArray = Array.newInstance(objectClass, 1);
+
+		if(NOT file.exists())
+		{
+			throw("PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
+		}
+
+		try
+		{
+			classLoader.loadClass("com.compoundtheory.classloader0.NetworkClassLoader");
+		}
+		catch(Any exc)
+		{
+			Array.set(parameters, 0, url.getClass());
+			Array.set(objectArray, 0, url);
+
+			method = loaderClass.getDeclaredMethod("addURL",parameters);
+			method.setAccessible(true);
+			method.invoke(classLoader, objectArray);
+		}
+	</cfscript>
+</cffunction>
+ --->
+
+<cffunction name="_trace">
+	<cfargument name="s">
+	<cfset var g = "">
+	<cfsavecontent variable="g">
+		<cfdump var="#arguments.s#">
+	</cfsavecontent>
+
+	<cftrace text="#g#">
+</cffunction>
+
+<!---
+private static final Class[] parameters = new Class[]{URL.class};
+
+public static void addURL(URL u) throws IOException {
+
+	URLClassLoader sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+	Class sysclass = URLClassLoader.class;
+
+	try {
+		Method method = sysclass.getDeclaredMethod("addURL",parameters);
+		method.setAccessible(true);
+		method.invoke(sysloader,new Object[]{ u });
+	} catch (Throwable t) {
+		t.printStackTrace();
+		throw new IOException("Error, could not add URL to system classloader");
+	}//end try catch
+
+}//end method
+ --->
 
 <cffunction name="setURLClassLoader" access="private" returntype="void" output="false">
 	<cfargument name="ClassLoader" type="any" required="true">
