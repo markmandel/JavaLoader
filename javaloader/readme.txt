@@ -1,6 +1,6 @@
-JavaLoader v0.3
+JavaLoader v0.4
 Author: Mark Mandel
-Date: 3rd January 2007
+Date: 6th April 2007
 
 Installation
 ----------------
@@ -15,7 +15,6 @@ To access the JavaLoader CFC, you call createObject on it like so:
 
 createObject("component", "javaloader.JavaLoader").init(loadPaths, 
 														[loadColdFusionClassPath,] 
-														[loadedClassPathBias,] 
 														[parentClassLoader]);
 
 There are four arguments that possible to configure how and what the JavaLoader loads.
@@ -32,14 +31,6 @@ loadPaths[2] = expandPath("log4j.jar");
 Loads the ColdFusion libraries with the loaded libraries.
 This used to be on by default, however now you must implicitly set it to be true if 
 you wish to access any of the libraries that ColdFusion loads at application startup.
-
-* param: loadedClassPathBias (default: true)
-If loading classes on top of a parent classpath, search the loaded classes before searching 
-the parent ClassPath
-
-This means that if this is set to 'true', if you load the ColdFusion libraries, and
-you load in, log4j for example, when retrieving log4j from JavaLoader, you will
-recieve the version that was loaded, not the ColdFusion library version.
 
 * parentClassLoader (null)
 (Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader.
@@ -60,6 +51,13 @@ Constructor you are required to call create(className).init();
 
 Example:
 javaloader.create("org.apache.log4j.Logger").init("my log");
+
+Memory Issues
+----------------
+Due to a bug in ColdFusion that can cause URLClassLoaders not to be garbage collected,
+it is advised that instances of JavaLoader are stored in the Server scope, so that they
+never time out.
+
 
 Integration
 ----------------
