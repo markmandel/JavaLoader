@@ -355,6 +355,6 @@ public class NetworkClassLoader extends ClassLoader {
         urlset = null;
         classCache = null;
         
-        System.out.println("collecting...");
+//        System.out.println("collecting...");
     }
 }
