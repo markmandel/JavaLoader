@@ -41,12 +41,15 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 		if(arguments.loadColdFusionClassPath)
 		{
-			arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
+			//arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
+			//can't use above, as doesn't work in some... things
+
+			arguments.parentClassLoader = getClass().getClassLoader();
+
 			//arguments.parentClassLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
 			//can't use the above, it doesn't have the CF stuff in it.
 		}
 
-		//hackNetworkLoaderIntoClassPath();
 		ensureNetworkClassLoaderOnServerScope();
 
 		//classLoader = createObject("java", "com.compoundtheory.classloader0.NetworkClassLoader").init();
@@ -70,6 +73,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			{
 				throw("PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
 			}
+
 			classLoader.addUrl(file.toURL());
 		}
 
@@ -94,7 +98,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "0.4">
+	<cfreturn "0.4.a">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
