@@ -27,6 +27,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cfscript>
 
 <!------------------------------------------- PUBLIC ------------------------------------------->
+
 <cffunction name="init" hint="Constructor" access="public" returntype="JavaLoader" output="false">
 	<cfargument name="loadPaths" hint="An array of directories of classes, or paths to .jar files to load" type="array" default="#ArrayNew(1)#" required="no">
 	<cfargument name="loadColdFusionClassPath" hint="Loads the ColdFusion libraries" type="boolean" required="No" default="false">
@@ -44,7 +45,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			//arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
 			//can't use above, as doesn't work in some... things
 
-			arguments.parentClassLoader = getClass().getClassLoader();
+			arguments.parentClassLoader = getPageContext().getClass().getClassLoader();
 
 			//arguments.parentClassLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
 			//can't use the above, it doesn't have the CF stuff in it.
@@ -98,7 +99,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "0.4.a">
+	<cfreturn "0.4.b">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
