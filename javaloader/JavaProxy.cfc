@@ -72,7 +72,7 @@ Mark Mandel		27/08/2007		Created
 	</cfscript>
 </cffunction>
 
-<cffunction	name="onMissingMethod" access="public" returntype="any"	output="false" hint="wires the coldfusion invocation to the Java Object">
+<cffunction	name="onMissingMethod" access="public" returntype="any" output="false" hint="wires the coldfusion invocation to the Java Object">
 	<cfargument	name="missingMethodName" type="string"	required="true"	hint=""	/>
 	<cfargument	name="missingMethodArguments" type="struct" required="true"	hint=""/>
 
@@ -234,7 +234,7 @@ Mark Mandel		27/08/2007		Created
 						}
 						else
 						{
-							throw("Ack", "Cannot match this primitive type", "'#param.getName()#' is just not matching");
+							found eq false;
 						}
 					}
 					else

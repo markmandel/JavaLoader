@@ -40,6 +40,8 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		var networkClassLoaderClass = 0;
 		var networkClassLoaderProxy = 0;
 
+		initUseJavaProxyCFC();
+
 		if(arguments.loadColdFusionClassPath)
 		{
 			//arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
@@ -56,7 +58,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		//classLoader = createObject("java", "com.compoundtheory.classloader0.NetworkClassLoader").init();
 		networkClassLoaderClass = getServerURLClassLoader().loadClass("com.compoundtheory.classloader.NetworkClassLoader");
 
-		networkClassLoaderProxy = createObject("java", "coldfusion.runtime.java.JavaProxy").init(networkClassLoaderClass);
+		networkClassLoaderProxy = createJavaProxy(networkClassLoaderClass);
 
 		if(isObject(arguments.parentClassLoader))
 		{
@@ -90,7 +92,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfscript>
 		var class = getURLClassLoader().loadClass(arguments.className);
 
-		return createObject("java", "coldfusion.runtime.java.JavaProxy").init(class);
+		return createJavaProxy(class);
 	</cfscript>
 </cffunction>
 
@@ -99,7 +101,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "0.4.b">
+	<cfreturn "0.5">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
@@ -140,6 +142,33 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	</cfscript>
 </cffunction>
 
+<cffunction name="createJavaProxy" hint="create a javaproxy, dependent on CF server settings" access="private" returntype="any" output="false">
+	<cfargument name="class" hint="the java class to create the proxy with" type="any" required="Yes">
+	<cfscript>
+		if(getUseJavaProxyCFC())
+		{
+			return createObject("component", "JavaProxy")._init(arguments.class);
+		}
+
+		return createObject("java", "coldfusion.runtime.java.JavaProxy").init(arguments.class);
+	</cfscript>
+</cffunction>
+
+<cffunction name="initUseJavaProxyCFC" hint="initialise whether or not to use the JavaProxy CFC instead of the coldfusion java object" access="public" returntype="string" output="false">
+	<cfscript>
+		setUseJavaProxyCFC(false);
+
+		try
+		{
+			createObject("java", "coldfusion.runtime.java.JavaProxy");
+		}
+		catch(Object exc)
+		{
+			setUseJavaProxyCFC(true);
+		}
+	</cfscript>
+</cffunction>
+
 <cffunction name="queryJars" hint="pulls a query of all the jars in the /resources/lib folder" access="private" returntype="array" output="false">
 	<cfscript>
 		var qJars = 0;
@@ -173,6 +202,15 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 <cffunction name="setURLClassLoader" access="private" returntype="void" output="false">
 	<cfargument name="ClassLoader" type="any" required="true">
 	<cfset instance.ClassLoader = arguments.ClassLoader />
+</cffunction>
+
+<cffunction name="getUseJavaProxyCFC" access="private" returntype="boolean" output="false">
+	<cfreturn instance.UseJavaProxyCFC />
+</cffunction>
+
+<cffunction name="setUseJavaProxyCFC" access="private" returntype="void" output="false">
+	<cfargument name="UseJavaProxyCFC" type="boolean" required="true">
+	<cfset instance.UseJavaProxyCFC = arguments.UseJavaProxyCFC />
 </cffunction>
 
 <cffunction name="throw" access="private" hint="Throws an Exception" output="false">
