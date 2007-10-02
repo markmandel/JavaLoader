@@ -1,6 +1,6 @@
-JavaLoader v0.4
+JavaLoader v0.5
 Author: Mark Mandel
-Date: 6th April 2007
+Date: 2nd October 2007
 
 Installation
 ----------------
@@ -17,7 +17,7 @@ createObject("component", "javaloader.JavaLoader").init(loadPaths,
 														[loadColdFusionClassPath,] 
 														[parentClassLoader]);
 
-There are four arguments that possible to configure how and what the JavaLoader loads.
+There are three arguments that possible to configure how and what the JavaLoader loads.
 
 * param: loadPaths
 An array of directories of classes, or paths to .jar files to load.
@@ -54,7 +54,7 @@ javaloader.create("org.apache.log4j.Logger").init("my log");
 
 Memory Issues
 ----------------
-Due to a bug in ColdFusion that can cause URLClassLoaders not to be garbage collected,
+Due to a bug in ColdFusion 7 that can cause URLClassLoaders not to be garbage collected,
 it is advised that instances of JavaLoader are stored in the Server scope, so that they
 never time out.
 
