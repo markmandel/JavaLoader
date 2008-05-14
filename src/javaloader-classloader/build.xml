@@ -5,7 +5,7 @@
 	<property name="dist" location="../../javaloader/lib/"/>	
     
   <target name="compile" depends="cleanALL" description="compile">
-  	<javac srcdir="${src}" destdir="${build}" debug="true" debuglevel="lines,vars,source"/>
+  	<javac srcdir="${src}" destdir="${build}" debug="true" debuglevel="lines,vars,source" target="1.4" source="1.4"/>
   	<antcall target="jarBuild"></antcall>
   </target>
     

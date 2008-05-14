@@ -84,6 +84,8 @@ public class NetworkClassLoader extends ClassLoader {
     private Hashtable urlset = new Hashtable();
 
     public NetworkClassLoader() {
+    	super(null);
+    	//debug("creating network class loader...");
     }
     
     /**
@@ -91,6 +93,8 @@ public class NetworkClassLoader extends ClassLoader {
      * @param delegate/parent class loader.
      */
     public NetworkClassLoader(ClassLoader parent) {
+    	super(parent);
+    	//debug("creating network class loader... with a parent");
         setParent(parent);
     }
 
@@ -242,23 +246,27 @@ public class NetworkClassLoader extends ClassLoader {
         // 3. then attempt to get the resource from the url set.
         //
 
-        // Lets check the system path for the resource.
-        istream = getSystemResourceAsStream(name);
-        if(istream != null)
+        // Lets load it ourselves.
+        byte[] data = loadResource(name);
+        if(data != null) {
+            istream = new ByteArrayInputStream(data);
+            
             return istream;
-
+        }
+        
+        
         // Lets check the parent/delegate class loader for the resource.
         if(parent != null) {
             istream = parent.getResourceAsStream(name);
             if(istream != null)
                 return istream;
         }
+        
+        // Lets check the system path for the resource.
+        istream = getSystemResourceAsStream(name);
+        if(istream != null)
+            return istream;        
 
-        // Lets load it ourselves.
-        byte[] data = loadResource(name);
-        if(data != null) {
-            istream = new ByteArrayInputStream(data);
-        }
 
         return istream;
     }
@@ -282,21 +290,52 @@ public class NetworkClassLoader extends ClassLoader {
         // Algorithm: (Please do not change the order; unless you
         // have a good reason to do so).
         //
-        // 1. first check the system class loader.
-        // 2. next  check the  delegate/parent class loader.
-        // 3. next  check the class cache
-        // 4. then attempt to load classes from the URL set.
+        // 1. check the class cache
+        // 2. next then attempt to load classes from the URL set.
+        // 3. next  check the  delegate/parent class loader.
+        // 4. next check the system class loader.
         //
+
+        // Lets see if the class is in the cache..
         
-        // Lets see if the class is in system class loader.
-        try {
-            c = findSystemClass(name);
-        }catch(ClassNotFoundException cnfe) {
-        }finally {
-            if(c != null)
-                return c;
+        //debug("load class:: " + name + " resolve: " + resolve);
+        
+        //debug(classCache.toString());
+        
+        c = (Class) classCache.get(name);
+
+        if(c != null)
+        {
+        	//debug("found class in cache..");
+        	return c;        
         }
 
+        // Lets see if we find the class all by ourselves.
+        
+        //debug("loading class data");
+        byte[] data = loadClassData(name);
+
+        if(data != null) 
+        {
+        	//debug("found data, attempting define");
+            // we did !!
+            c = defineClass(name, data);
+            
+            //debug("placing is cache");
+            
+            classCache.put(name, c);
+            if(resolve)
+            {
+            	resolveClass(c);
+            }
+        }
+        
+        if(c != null)
+        {
+        	//debug("found in class data, returning...");
+        	return c;        
+        }        
+        
         // Lets see if the class is in parent class loader.
         try {
             if(parent != null)
@@ -304,30 +343,23 @@ public class NetworkClassLoader extends ClassLoader {
         }catch(ClassNotFoundException cnfe) {
         }finally {
             if(c != null)
-                return c;
+            {
+            	//debug("found in parent class loader...");
+            	return c;
+            }
         }
-
-        // Lets see if the class is in the cache..
-        c = (Class) classCache.get(name);
-
-        if(c != null)
-            return c;
-
-
-        // Lets see if we find the class all by ourselves.
-        byte[] data = loadClassData(name);
-
-        if(data != null) {
-            // we did !!
-            c = defineClass(name, data);
-            classCache.put(name, c);
-            if(resolve)
-                resolveClass(c);
-        } else {
-            // We are out of luck at this point...
-            throw new ClassNotFoundException(name);
-        }
-
+        
+        //debug("loading through super..");
+        
+        c = super.loadClass(name, resolve);
+        
+        if(c == null)
+        {
+        	//debug("no go mate");
+        	// We are out of luck at this point...
+        	throw new ClassNotFoundException(name);
+        }        
+        
         return c;
     }
 
@@ -354,7 +386,13 @@ public class NetworkClassLoader extends ClassLoader {
         parent = null;
         urlset = null;
         classCache = null;
-        
-//        System.out.println("collecting...");
     }
+    
+    /*
+    private void debug(String str)
+    {
+    	System.out.println(str);
+    }
+    */
+    
 }
