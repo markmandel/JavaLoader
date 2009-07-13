@@ -1,4 +1,4 @@
-JavaLoader v0.5
+JavaLoader v0.6
 Author: Mark Mandel
 Date: 2nd October 2007
 
@@ -54,9 +54,9 @@ javaloader.create("org.apache.log4j.Logger").init("my log");
 
 Memory Issues
 ----------------
-Due to a bug in ColdFusion 7 that can cause URLClassLoaders not to be garbage collected,
-it is advised that instances of JavaLoader are stored in the Server scope, so that they
-never time out.
+Due to the way classes are cached in ColdFusion, this can cause URLClassLoaders not to be garbage collected.
+It is advised that instances of JavaLoader are stored in the Server scope, so that they
+never time out, and thus avoid this memory leak.
 
 
 Integration
