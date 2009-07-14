@@ -32,6 +32,9 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfargument name="loadPaths" hint="An array of directories of classes, or paths to .jar files to load" type="array" default="#ArrayNew(1)#" required="no">
 	<cfargument name="loadColdFusionClassPath" hint="Loads the ColdFusion libraries" type="boolean" required="No" default="false">
 	<cfargument name="parentClassLoader" hint="(Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader" type="any" default="" required="false">
+	<cfargument name="sourceDirectories" hint="Directories that contain Java source code that are to be dynamically compiled" type="array" required="No">
+	<cfargument name="sourceJarDirectory" hint="the directory to build the .jar file for dynamic compilation in, defaults to ./tmp" type="string" required="No" default="#getDirectoryFromPath(getMetadata(this).path)#/tmp">
+	<cfargument name="trustedSource" hint="Whether or not the source is trusted, i.e. it is going to change? Defaults to false, so changes will be recompiled and loaded" type="boolean" required="No" default="false">
 
 	<cfscript>
 		var iterator = arguments.loadPaths.iterator();

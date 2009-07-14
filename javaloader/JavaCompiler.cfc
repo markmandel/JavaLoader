@@ -37,6 +37,7 @@
 
 <cffunction name="compile" hint="compiles Java to bytecode, and returns a JAR" access="public" returntype="any" output="false">
 	<cfargument name="directoryArray" hint="array of directories to compile" type="array" required="Yes">
+	<cfargument name="jarDirectory" hint="the directory to build the .jar file in, defaults to ./tmp" type="string" required="No" default="#getDirectoryFromPath(getMetadata(this).path)#/tmp">
 	<cfscript>
 		//setup file manager with default exception handler, default locale, and default character set
 		var fileManager = getCompiler().getStandardFileManager(JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""));
@@ -46,6 +47,7 @@
 		var fileObjects = 0;
 		var os = getPageContext().getResponse().getOutputStream();
 		var osw = createObject("java", "java.io.OutputStreamWriter").init(os);
+		var jarName = arguments.jarDirectory & "/" & createUUID() & ".jar";
     </cfscript>
 	
 	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
@@ -63,7 +65,14 @@
 				getCompiler().getTask(osw, fileManager, JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""), fileObjects).call();
 	        </cfscript>
 		</cfloop>
+		
+		<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">			
 	</cfloop>
+	
+	<!--- now add in the manifest --->
+	<cfzip action="zip" file="#jarName#" recurse="yes" source="#getDirectoryFromPath(getMetadata(this).path)#/compile" overwrite="no">
+	
+	<cfreturn jarName />
 </cffunction>
 
 <cffunction name="getVersion" hint="returns the version number" access="public" returntype="string" output="false">
