@@ -33,7 +33,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfargument name="loadColdFusionClassPath" hint="Loads the ColdFusion libraries" type="boolean" required="No" default="false">
 	<cfargument name="parentClassLoader" hint="(Expert use only) The parent java.lang.ClassLoader to set when creating the URLClassLoader" type="any" default="" required="false">
 	<cfargument name="sourceDirectories" hint="Directories that contain Java source code that are to be dynamically compiled" type="array" required="No">
-	<cfargument name="sourceJarDirectory" hint="the directory to build the .jar file for dynamic compilation in, defaults to ./tmp" type="string" required="No" default="#getDirectoryFromPath(getMetadata(this).path)#/tmp">
+	<cfargument name="compileDirectory" hint="the directory to build the .jar file for dynamic compilation in, defaults to ./tmp" type="string" required="No" default="#getDirectoryFromPath(getMetadata(this).path)#/tmp">
 	<cfargument name="trustedSource" hint="Whether or not the source is trusted, i.e. it is going to change? Defaults to false, so changes will be recompiled and loaded" type="boolean" required="No" default="false">
 
 	<cfscript>
@@ -82,9 +82,19 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 			classLoader.addUrl(file.toURL());
 		}
+		
+		setURLClassLoader(classLoader);
+		
+		if(structKeyExists(arguments, "sourceDirectories"))
+		{
+			setJavaCompiler(createObject("component", "JavaCompiler").init(arguments.compileDirectory));
+			setSourceDirectories(arguments.sourceDirectories);
+			setCompileDirectory(arguments.compileDirectory);
+			
+			compileSource();
+		}
 
 		//pass in the system loader
-		setURLClassLoader(classLoader);
 
 		return this;
 	</cfscript>
@@ -116,6 +126,45 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
+
+<cffunction name="compileSource" hint="compile dynamic source" access="private" returntype="string" output="false">
+	<cfscript>
+		var dir = 0;
+		var path = getCompileDirectory() & "/" & createUUID();
+		
+		var paths = 0;
+		var jar = 0;
+		var file = 0;
+    </cfscript>
+	<cftry>
+		<cfdirectory action="create" directory="#path#">
+	
+		<!--- first we copy the source to our tmp dir --->
+		<cfloop array="#getSourceDirectories()#" index="dir">
+			<cfset directoryCopy(dir, path)>
+		</cfloop>
+		
+		<!--- then we compile it, and grab that jar --->
+		<cfset paths = [path]>
+		<cfset jar = getJavaCompiler().compile(paths)>
+		
+		<!--- add that jar to the classloader --->
+		<cfset file = createObject("java", "java.io.File").init(jar)>
+		<cfset getURLClassLoader().addURL(file.toURL())>
+		
+		<!--- delete the files --->
+		<cfdirectory action="delete" recurse="true" directory="#path#">
+		<cffile action="delete" file="#jar#" />
+		
+		<cfcatch>
+			<!--- make sure the files are deleted --->
+			<cfdirectory action="delete" recurse="true" directory="#path#">
+			<cffile action="delete" file="#jar#" />
+		
+			<cfrethrow>
+		</cfcatch>
+	</cftry>
+</cffunction>
 
 <cffunction name="ensureNetworkClassLoaderOnServerScope"
 			hint="makes sure there is a URL class loader on the server scope that can load me up some networkClassLoader goodness"
@@ -222,11 +271,75 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfset instance.UseJavaProxyCFC = arguments.UseJavaProxyCFC />
 </cffunction>
 
+<cffunction name="hasJavaCompiler" hint="whether this object has a javaCompiler" access="public" returntype="boolean" output="false">
+	<cfreturn StructKeyExists(instance, "javaCompiler") />
+</cffunction>
+
+<cffunction name="getJavaCompiler" access="private" returntype="JavaCompiler" output="false">
+	<cfreturn instance.javaCompiler />
+</cffunction>
+
+<cffunction name="setJavaCompiler" access="private" returntype="void" output="false">
+	<cfargument name="javaCompiler" type="JavaCompiler" required="true">
+	<cfset instance.javaCompiler = arguments.javaCompiler />
+</cffunction>
+
+<cffunction name="getSourceDirectories" access="private" returntype="array" output="false">
+	<cfreturn instance.sourceDirectories />
+</cffunction>
+
+<cffunction name="setSourceDirectories" access="private" returntype="void" output="false">
+	<cfargument name="sourceDirectories" type="array" required="true">
+	<cfset instance.sourceDirectories = arguments.sourceDirectories />
+</cffunction>
+
+<cffunction name="getCompileDirectory" access="private" returntype="string" output="false">
+	<cfreturn instance.compileDirectory />
+</cffunction>
+
+<cffunction name="setCompileDirectory" access="private" returntype="void" output="false">
+	<cfargument name="compileDirectory" type="string" required="true">
+	<cfset instance.compileDirectory = arguments.compileDirectory />
+</cffunction>
+
 <cffunction name="throwException" access="private" hint="Throws an Exception" output="false">
 	<cfargument name="type" hint="The type of exception" type="string" required="Yes">
 	<cfargument name="message" hint="The message to accompany the exception" type="string" required="Yes">
 	<cfargument name="detail" type="string" hint="The detail message for the exception" required="No" default="">
 		<cfthrow type="#arguments.type#" message="#arguments.message#" detail="#arguments.detail#">
+</cffunction>
+
+<!---
+Copies a directory.
+
+@param source      Source directory. (Required)
+@param destination      Destination directory. (Required)
+@param nameConflict      What to do when a conflict occurs (skip, overwrite, makeunique). Defaults to overwrite. (Optional)
+@return Returns nothing.
+@author Joe Rinehart (joe.rinehart@gmail.com)
+@version 1, July 27, 2005
+--->
+<cffunction name="directoryCopy" output="true">
+    <cfargument name="source" required="true" type="string">
+    <cfargument name="destination" required="true" type="string">
+    <cfargument name="nameconflict" required="true" default="overwrite">
+
+    <cfset var contents = "" />
+    <cfset var dirDelim = createObject("java", "java.lang.System").getProperty("file.separator")>
+    
+    <cfif not(directoryExists(arguments.destination))>
+        <cfdirectory action="create" directory="#arguments.destination#">
+    </cfif>
+    
+    <cfdirectory action="list" directory="#arguments.source#" name="contents">
+    
+    <cfloop query="contents">
+        <cfif contents.type eq "file">
+            <cffile action="copy" source="#arguments.source#/#name#" destination="#arguments.destination#/#name#" nameconflict="#arguments.nameConflict#">
+        <cfelseif contents.type eq "dir">
+            <cfset directoryCopy(arguments.source & dirDelim & name, arguments.destination & dirDelim & name) />
+        </cfif>
+    </cfloop>
 </cffunction>
 
 </cfcomponent>

@@ -3,6 +3,7 @@
 <!------------------------------------------- PUBLIC ------------------------------------------->
 
 <cffunction name="init" hint="Constructor" access="public" returntype="JavaCompiler" output="false">
+	<cfargument name="jarDirectory" hint="the directory to build the .jar file in, defaults to ./tmp" type="string" required="No" default="#getDirectoryFromPath(getMetadata(this).path)#/tmp">
 	<cfscript>
 		var data = {};
 		var defaultCompiler = "com.sun.tools.javac.api.JavacTool";
@@ -24,12 +25,13 @@
 		 */
 		if(NOT StructKeyExists(data, "compiler"))
 		{
-			throw("javaCompiler.NoCompilerAvailableException", 
+			throwException("javaCompiler.NoCompilerAvailableException", 
 				"No Java Compiler is available",
-				"There is no Java Compiler available. Make sure tools.jar is in your classpath and/or you are running Java 1.6+");
+				"There is no Java Compiler available. Make sure tools.jar is in your classpath and you are running Java 1.6+");
 		}
 		
 		setCompiler(data.compiler);
+		setJarDirectory(arguments.jarDirectory);
 		
 		return this;
 	</cfscript>
@@ -37,7 +39,6 @@
 
 <cffunction name="compile" hint="compiles Java to bytecode, and returns a JAR" access="public" returntype="any" output="false">
 	<cfargument name="directoryArray" hint="array of directories to compile" type="array" required="Yes">
-	<cfargument name="jarDirectory" hint="the directory to build the .jar file in, defaults to ./tmp" type="string" required="No" default="#getDirectoryFromPath(getMetadata(this).path)#/tmp">
 	<cfscript>
 		//setup file manager with default exception handler, default locale, and default character set
 		var fileManager = getCompiler().getStandardFileManager(JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""));
@@ -47,7 +48,7 @@
 		var fileObjects = 0;
 		var os = getPageContext().getResponse().getOutputStream();
 		var osw = createObject("java", "java.io.OutputStreamWriter").init(os);
-		var jarName = arguments.jarDirectory & "/" & createUUID() & ".jar";
+		var jarName = getJarDirectory() & "/" & createUUID() & ".jar";
     </cfscript>
 	
 	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
@@ -90,6 +91,15 @@
 <cffunction name="setCompiler" access="private" returntype="void" output="false">
 	<cfargument name="Compiler" type="any" required="true">
 	<cfset instance.Compiler = arguments.Compiler />
+</cffunction>
+
+<cffunction name="getJarDirectory" access="private" returntype="string" output="false">
+	<cfreturn instance.jarDirectory />
+</cffunction>
+
+<cffunction name="setJarDirectory" access="private" returntype="void" output="false">
+	<cfargument name="jarDirectory" type="string" required="true">
+	<cfset instance.jarDirectory = arguments.jarDirectory />
 </cffunction>
 
 <cffunction name="throwException" access="private" hint="Throws an Exception" output="false">

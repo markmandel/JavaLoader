@@ -29,6 +29,19 @@
     </cfscript>
 </cffunction>
 
+<cffunction name="javaLoaderCompileTest" hint="tell JL to compile, and run the test that way" access="public" returntype="void" output="false">
+	<cfscript>
+		var local = {};
+		
+		local.paths = [instance.srcPath];
+		
+		local.loader = createObject("component", "javaloader.JavaLoader").init(sourceDirectories=local.paths);
+		
+		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		
+		assertEquals(local.helloWorld.hello(), "Hello World");		
+    </cfscript>
+</cffunction>
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
