@@ -46,9 +46,9 @@
 		var fileArray = 0;
 		var directoryToCompile = 0;
 		var fileObjects = 0;
-		var os = getPageContext().getResponse().getOutputStream();
-		var osw = createObject("java", "java.io.OutputStreamWriter").init(os);
 		var jarName = getJarDirectory() & "/" & createUUID() & ".jar";
+		var compilePass = true;
+		var osw = createObject("java", "java.io.StringWriter").init();
     </cfscript>
 	
 	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
@@ -63,7 +63,7 @@
 				fileObjects = fileManager.getJavaFileObjectsFromStrings(fileArray);
 				
 				//does the compilation
-				getCompiler().getTask(osw, fileManager, JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""), fileObjects).call();
+				compilePass = compilePass AND getCompiler().getTask(osw, fileManager, JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""), fileObjects).call();
 	        </cfscript>
 		</cfloop>
 		
@@ -72,6 +72,10 @@
 	
 	<!--- now add in the manifest --->
 	<cfzip action="zip" file="#jarName#" recurse="yes" source="#getDirectoryFromPath(getMetadata(this).path)#/compile" overwrite="no">
+	
+	<cfif NOT compilePass>
+		<cfset throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString())>
+	</cfif>
 	
 	<cfreturn jarName />
 </cffunction>

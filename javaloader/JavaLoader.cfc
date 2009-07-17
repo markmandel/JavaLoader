@@ -77,7 +77,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			file = createObject("java", "java.io.File").init(iterator.next());
 			if(NOT file.exists())
 			{
-				throwException("PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
+				throwException("javaloader.PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
 			}
 
 			classLoader.addUrl(file.toURL());
@@ -201,6 +201,18 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="createJavaProxy" hint="create a javaproxy, dependent on CF server settings" access="private" returntype="any" output="false">
+	<cfargument name="class" hint="the java class to create the proxy with" type="any" required="Yes">
+	<cfscript>
+		if(getUseJavaProxyCFC())
+		{
+			return createObject("component", "JavaProxy")._init(arguments.class);
+		}
+
+		return createObject("java", "coldfusion.runtime.java.JavaProxy").init(arguments.class);
+	</cfscript>
+</cffunction>
+
+<cffunction name="createJavaProxyCFC" hint="create a javaproxy, dependent on CF server settings" access="private" returntype="any" output="false">
 	<cfargument name="class" hint="the java class to create the proxy with" type="any" required="Yes">
 	<cfscript>
 		if(getUseJavaProxyCFC())
