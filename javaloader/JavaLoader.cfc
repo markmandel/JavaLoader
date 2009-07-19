@@ -37,14 +37,8 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfargument name="trustedSource" hint="Whether or not the source is trusted, i.e. it is going to change? Defaults to false, so changes will be recompiled and loaded" type="boolean" required="No" default="false">
 
 	<cfscript>
-		var iterator = arguments.loadPaths.iterator();
-		var file = 0;
-		var classLoader = 0;
-		var networkClassLoaderClass = 0;
-		var networkClassLoaderProxy = 0;
-
 		initUseJavaProxyCFC();
-
+		
 		if(arguments.loadColdFusionClassPath)
 		{
 			//arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
@@ -54,37 +48,15 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 			//arguments.parentClassLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
 			//can't use the above, it doesn't have the CF stuff in it.
-		}
+		}		
+		
+		setClassLoadPaths(arguments.loadPaths);
+		setParentClassLoader(arguments.parentClassLoader);
 
 		ensureNetworkClassLoaderOnServerScope();
-
-		//classLoader = createObject("java", "com.compoundtheory.classloader0.NetworkClassLoader").init();
-		networkClassLoaderClass = getServerURLClassLoader().loadClass("com.compoundtheory.classloader.NetworkClassLoader");
-
-		networkClassLoaderProxy = createJavaProxy(networkClassLoaderClass);
-
-		if(isObject(arguments.parentClassLoader))
-		{
-			classLoader = networkClassLoaderProxy.init(arguments.parentClassLoader);
-		}
-		else
-		{
-			classLoader = networkClassLoaderProxy.init();
-		}
-
-		while(iterator.hasNext())
-		{
-			file = createObject("java", "java.io.File").init(iterator.next());
-			if(NOT file.exists())
-			{
-				throwException("javaloader.PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
-			}
-
-			classLoader.addUrl(file.toURL());
-		}
 		
-		setURLClassLoader(classLoader);
-		
+		loadClasses();
+
 		if(structKeyExists(arguments, "sourceDirectories"))
 		{
 			setJavaCompiler(createObject("component", "JavaCompiler").init(arguments.compileDirectory));
@@ -92,10 +64,21 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			setCompileDirectory(arguments.compileDirectory);
 			
 			compileSource();
+			
+			setSourceLastModified(calculateSourceLastModified());
+
+			//do the method switching for non-trusted source
+			if(NOT arguments.trustedSource)
+			{
+				variables.createWithoutCheck = variables.create;
+				
+				StructDelete(this, "create");
+				StructDelete(variables, "create");
+	
+				this.create = variables.createWithSourceCheck;
+			}
 		}
-
-		//pass in the system loader
-
+		
 		return this;
 	</cfscript>
 </cffunction>
@@ -126,6 +109,63 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
+
+<cffunction name="createWithSourceCheck" hint="does the create call, but first makes a source check" access="private" returntype="any" output="false">
+	<cfargument name="className" hint="The name of the class to create" type="string" required="Yes">
+	<cfscript>
+		var dateLastModified = calculateSourceLastModified();
+		
+		/*
+			If the source has changed in any way, recompile and load
+		*/
+		if(dateCompare(dateLastModified, getSourceLastModified()) eq 1)
+		{
+			loadClasses();
+			compileSource();
+		}
+		
+		//if all the comilation goes according to plan, set the date last modified
+		setSourceLastModified(dateLastModified);
+		
+		return createWithoutCheck(argumentCollection=arguments);
+    </cfscript>
+</cffunction>
+
+<cffunction name="loadClasses" hint="loads up the classes in the system" access="private" returntype="void" output="false">
+	<cfscript>
+		var iterator = getClassLoadPaths().iterator();
+		var file = 0;
+		var classLoader = 0;
+		var networkClassLoaderClass = 0;
+		var networkClassLoaderProxy = 0;
+    	    
+		networkClassLoaderClass = getServerURLClassLoader().loadClass("com.compoundtheory.classloader.NetworkClassLoader");
+
+		networkClassLoaderProxy = createJavaProxy(networkClassLoaderClass);
+
+		if(isObject(getParentClassLoader()))
+		{
+			classLoader = networkClassLoaderProxy.init(arguments.parentClassLoader);
+		}
+		else
+		{
+			classLoader = networkClassLoaderProxy.init();
+		}
+
+		while(iterator.hasNext())
+		{
+			file = createObject("java", "java.io.File").init(iterator.next());
+			if(NOT file.exists())
+			{
+				throwException("javaloader.PathNotFoundException", "The path you have specified could not be found", file.getAbsolutePath() & " does not exist");
+			}
+
+			classLoader.addUrl(file.toURL());
+		}
+		
+		setURLClassLoader(classLoader);
+    </cfscript>
+</cffunction>
 
 <cffunction name="compileSource" hint="compile dynamic source" access="private" returntype="string" output="false">
 	<cfscript>
@@ -159,11 +199,34 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		<cfcatch>
 			<!--- make sure the files are deleted --->
 			<cfdirectory action="delete" recurse="true" directory="#path#">
-			<cffile action="delete" file="#jar#" />
 		
 			<cfrethrow>
 		</cfcatch>
 	</cftry>
+</cffunction>
+
+<cffunction name="calculateSourceLastModified" hint="returns what the source last modified was" access="private" returntype="date" output="false">
+	<cfscript>
+		var lastModified = createDate(1900, 1, 1);
+		var dir = 0;
+		var qLastModified = 0;
+    </cfscript>
+	
+	<cfloop array="#getSourceDirectories()#" index="dir">
+		<cfdirectory action="list" directory="#dir#" recurse="true" 
+					type="file" 
+					sort="dateLastModified desc" 
+					name="qLastModified">
+		<cfscript>
+			//get the latest date modified
+			if(dateCompare(lastModified, qlastModified.dateLastModified) eq -1) 
+			{
+				lastModified = qLastModified.dateLastModified;
+			}
+        </cfscript>
+	</cfloop>
+	
+	<cfreturn lastModified />
 </cffunction>
 
 <cffunction name="ensureNetworkClassLoaderOnServerScope"
@@ -203,11 +266,6 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 <cffunction name="createJavaProxy" hint="create a javaproxy, dependent on CF server settings" access="private" returntype="any" output="false">
 	<cfargument name="class" hint="the java class to create the proxy with" type="any" required="Yes">
 	<cfscript>
-		if(getUseJavaProxyCFC())
-		{
-			return createObject("component", "JavaProxy")._init(arguments.class);
-		}
-
 		return createObject("java", "coldfusion.runtime.java.JavaProxy").init(arguments.class);
 	</cfscript>
 </cffunction>
@@ -215,26 +273,20 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 <cffunction name="createJavaProxyCFC" hint="create a javaproxy, dependent on CF server settings" access="private" returntype="any" output="false">
 	<cfargument name="class" hint="the java class to create the proxy with" type="any" required="Yes">
 	<cfscript>
-		if(getUseJavaProxyCFC())
-		{
-			return createObject("component", "JavaProxy")._init(arguments.class);
-		}
-
-		return createObject("java", "coldfusion.runtime.java.JavaProxy").init(arguments.class);
+		return createObject("component", "JavaProxy")._init(arguments.class);
 	</cfscript>
 </cffunction>
 
-<cffunction name="initUseJavaProxyCFC" hint="initialise whether or not to use the JavaProxy CFC instead of the coldfusion java object" access="public" returntype="string" output="false">
+<cffunction name="initUseJavaProxyCFC" hint="initialise whether or not to use the JavaProxy CFC instead of the coldfusion java object" access="private" returntype="string" output="false">
 	<cfscript>
-		setUseJavaProxyCFC(false);
-
 		try
 		{
 			createObject("java", "coldfusion.runtime.java.JavaProxy");
 		}
 		catch(Object exc)
 		{
-			setUseJavaProxyCFC(true);
+			//do method replacement, as it will be much faster long term
+			variables.createJavaProxy = variables.createJavaProxyCFC;
 		}
 	</cfscript>
 </cffunction>
@@ -265,6 +317,24 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfreturn aJars>
 </cffunction>
 
+<cffunction name="getClassLoadPaths" access="private" returntype="array" output="false">
+	<cfreturn instance.classLoadPaths />
+</cffunction>
+
+<cffunction name="setClassLoadPaths" access="private" returntype="void" output="false">
+	<cfargument name="classLoadPaths" type="array" required="true">
+	<cfset instance.classLoadPaths = arguments.classLoadPaths />
+</cffunction>
+
+<cffunction name="getParentClassLoader" access="private" returntype="any" output="false">
+	<cfreturn instance.parentClassLoader />
+</cffunction>
+
+<cffunction name="setParentClassLoader" access="private" returntype="void" output="false">
+	<cfargument name="parentClassLoader" type="any" required="true">
+	<cfset instance.parentClassLoader = arguments.parentClassLoader />
+</cffunction>
+
 <cffunction name="getServerURLClassLoader" hint="returns the server URL class loader" access="private" returntype="any" output="false">
 	<cfreturn server[instance.static.uuid & "." & getVersion()] />
 </cffunction>
@@ -274,16 +344,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfset instance.ClassLoader = arguments.ClassLoader />
 </cffunction>
 
-<cffunction name="getUseJavaProxyCFC" access="private" returntype="boolean" output="false">
-	<cfreturn instance.UseJavaProxyCFC />
-</cffunction>
-
-<cffunction name="setUseJavaProxyCFC" access="private" returntype="void" output="false">
-	<cfargument name="UseJavaProxyCFC" type="boolean" required="true">
-	<cfset instance.UseJavaProxyCFC = arguments.UseJavaProxyCFC />
-</cffunction>
-
-<cffunction name="hasJavaCompiler" hint="whether this object has a javaCompiler" access="public" returntype="boolean" output="false">
+<cffunction name="hasJavaCompiler" hint="whether this object has a javaCompiler" access="private" returntype="boolean" output="false">
 	<cfreturn StructKeyExists(instance, "javaCompiler") />
 </cffunction>
 
@@ -303,6 +364,19 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 <cffunction name="setSourceDirectories" access="private" returntype="void" output="false">
 	<cfargument name="sourceDirectories" type="array" required="true">
 	<cfset instance.sourceDirectories = arguments.sourceDirectories />
+</cffunction>
+
+<cffunction name="getSourceLastModified" access="private" returntype="date" output="false">
+	<cfreturn instance.sourceLastModified />
+</cffunction>
+
+<cffunction name="setSourceLastModified" access="private" returntype="void" output="false">
+	<cfargument name="sourceLastModified" type="date" required="true">
+	<cfset instance.sourceLastModified = arguments.sourceLastModified />
+</cffunction>
+
+<cffunction name="hasSourceLastModified" hint="whether this object has a sourceLastModified" access="private" returntype="boolean" output="false">
+	<cfreturn StructKeyExists(instance, "sourceLastModified") />
 </cffunction>
 
 <cffunction name="getCompileDirectory" access="private" returntype="string" output="false">
@@ -331,7 +405,7 @@ Copies a directory.
 @author Joe Rinehart (joe.rinehart@gmail.com)
 @version 1, July 27, 2005
 --->
-<cffunction name="directoryCopy" output="true">
+<cffunction name="directoryCopy" access="private" output="true">
     <cfargument name="source" required="true" type="string">
     <cfargument name="destination" required="true" type="string">
     <cfargument name="nameconflict" required="true" default="overwrite">

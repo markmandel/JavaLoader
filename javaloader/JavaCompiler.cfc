@@ -67,15 +67,16 @@
 	        </cfscript>
 		</cfloop>
 		
-		<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">			
+		<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">		
 	</cfloop>
+	
+	<cfif NOT compilePass>
+		<cffile action="delete" file="#jarName#">
+		<cfset throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString())>
+	</cfif>
 	
 	<!--- now add in the manifest --->
 	<cfzip action="zip" file="#jarName#" recurse="yes" source="#getDirectoryFromPath(getMetadata(this).path)#/compile" overwrite="no">
-	
-	<cfif NOT compilePass>
-		<cfset throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString())>
-	</cfif>
 	
 	<cfreturn jarName />
 </cffunction>
