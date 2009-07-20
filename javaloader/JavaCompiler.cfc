@@ -74,9 +74,8 @@
 		<cffile action="delete" file="#jarName#">
 		<cfset throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString())>
 	</cfif>
-	
-	<!--- now add in the manifest --->
-	<cfzip action="zip" file="#jarName#" recurse="yes" source="#getDirectoryFromPath(getMetadata(this).path)#/compile" overwrite="no">
+
+	<!--- we won't bother with an manifest, as we don't really need one --->
 	
 	<cfreturn jarName />
 </cffunction>
