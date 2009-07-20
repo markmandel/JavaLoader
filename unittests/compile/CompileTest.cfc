@@ -15,7 +15,7 @@
 		
 		local.compiler = createObject("component", "javaloader.JavaCompiler").init();
 		
-		local.paths = [instance.srcPath];
+		local.paths = [instance.srcPath & "/helloworld"];
 		
 		local.jar = local.compiler.compile(local.paths);
 		
@@ -23,7 +23,7 @@
 		
 		local.loader = createObject("component", "javaloader.JavaLoader").init(local.paths);
 		
-		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
 		
 		assertEquals(local.helloWorld.hello(), "Hello World");
     </cfscript>
@@ -33,11 +33,11 @@
 	<cfscript>
 		var local = {};
 		
-		local.paths = [instance.srcPath];
+		local.paths = [instance.srcPath & "/helloworld"];
 		
 		local.loader = createObject("component", "javaloader.JavaLoader").init(sourceDirectories=local.paths);
 		
-		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
 		
 		assertEquals(local.helloWorld.hello(), "Hello World");		
     </cfscript>
@@ -49,11 +49,11 @@
 		
 		local.check = false;
 		
-		fileMove(instance.srcPath & "/com/HelloWorldBroken.java.bad", instance.srcPath & "/com/HelloWorldBroken.java");
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java.bad", instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java");
 		
 		local.compiler = createObject("component", "javaloader.JavaCompiler").init();
 		
-		local.paths = [instance.srcPath];
+		local.paths = [instance.srcPath & "/helloworld"];
 		
 		try
 		{
@@ -66,13 +66,13 @@
 		}
 		catch(Any exc)
 		{
-			fileMove(instance.srcPath & "/com/HelloWorldBroken.java", instance.srcPath & "/com/HelloWorldBroken.java.bad");
+			fileMove(instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java", instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java.bad");
 		}
 		
 		AssertTrue(local.check, "An error should have been thrown on the compilation");
 		
 		//reset it
-		fileMove(instance.srcPath & "/com/HelloWorldBroken.java", instance.srcPath & "/com/HelloWorldBroken.java.bad");		
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java", instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java.bad");		
     </cfscript>
 </cffunction>
 
@@ -80,27 +80,27 @@
 	<cfscript>
 		var local = {};
 		
-		local.paths = [instance.srcPath];
+		local.paths = [instance.srcPath & "/helloworld"];
 		
 		local.loader = createObject("component", "javaloader.JavaLoader").init(sourceDirectories=local.paths);
 		
-		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
 		
 		assertEquals(local.helloWorld.hello(), "Hello World");
 		
-		fileMove(instance.srcPath & "/com/HelloWorld.java", instance.srcPath & "/com/HelloWorld.java.bak");
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorld.java", instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak");
 		
-		local.content = fileRead(instance.srcPath & "/com/HelloWorld.java.bak");
+		local.content = fileRead(instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak");
 		
 		local.content = replace(local.content, '"Hello World"', '"This has now been changed"');
 		
-		fileWrite(instance.srcPath & "/com/HelloWorld.java", local.content);
+		fileWrite(instance.srcPath & "/helloworld/ut1/HelloWorld.java", local.content);
 
-		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
 		
 		assertEquals("This has now been changed", local.helloWorld.hello());
 		
-		fileMove(instance.srcPath & "/com/HelloWorld.java.bak", instance.srcPath & "/com/HelloWorld.java");
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak", instance.srcPath & "/helloworld/ut1/HelloWorld.java");
     </cfscript>
 </cffunction>
 
@@ -108,27 +108,27 @@
 	<cfscript>
 		var local = {};
 		
-		local.paths = [instance.srcPath];
+		local.paths = [instance.srcPath & "/helloworld"];
 		
 		local.loader = createObject("component", "javaloader.JavaLoader").init(sourceDirectories=local.paths, trustedSource=true);
 		
-		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
 		
 		assertEquals(local.helloWorld.hello(), "Hello World");
 		
-		fileMove(instance.srcPath & "/com/HelloWorld.java", instance.srcPath & "/com/HelloWorld.java.bak");
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorld.java", instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak");
 		
-		local.content = fileRead(instance.srcPath & "/com/HelloWorld.java.bak");
+		local.content = fileRead(instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak");
 		
 		local.content = replace(local.content, '"Hello World"', '"This has now been changed"');
 		
-		fileWrite(instance.srcPath & "/com/HelloWorld.java", local.content);
+		fileWrite(instance.srcPath & "/helloworld/ut1/HelloWorld.java", local.content);
 
-		local.helloWorld = local.loader.create("com.HelloWorld").init();
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
 		
 		assertEquals("Hello World", local.helloWorld.hello());
 		
-		fileMove(instance.srcPath & "/com/HelloWorld.java.bak", instance.srcPath & "/com/HelloWorld.java");
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak", instance.srcPath & "/helloworld/ut1/HelloWorld.java");
     </cfscript>
 </cffunction>
 
