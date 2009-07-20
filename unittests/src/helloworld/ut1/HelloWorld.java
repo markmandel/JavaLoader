@@ -1,4 +1,4 @@
-package com;
+package ut1;
 
 public class HelloWorld
 {
