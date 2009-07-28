@@ -39,6 +39,7 @@
 
 <cffunction name="compile" hint="compiles Java to bytecode, and returns a JAR" access="public" returntype="any" output="false">
 	<cfargument name="directoryArray" hint="array of directories to compile" type="array" required="Yes">
+	<cfargument name="classLoader" hint="a optional URLClassloader to use as the parent for compilation" type="any" required="false">
 	<cfscript>
 		//setup file manager with default exception handler, default locale, and default character set
 		var fileManager = getCompiler().getStandardFileManager(JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""));
@@ -49,6 +50,7 @@
 		var jarName = getJarDirectory() & "/" & createUUID() & ".jar";
 		var compilePass = true;
 		var osw = createObject("java", "java.io.StringWriter").init();
+		var options = [];
     </cfscript>
 	
 	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
@@ -60,10 +62,15 @@
 				
 				ArrayAppend(fileArray, qFiles.directory & "/" & qFiles.name);
 				
+				if(structKeyExists(arguments, "classLoader"))
+				{
+					options = addClassLoaderFiles(options, arguments.classLoader, arguments.directoryArray);
+				}
+				
 				fileObjects = fileManager.getJavaFileObjectsFromStrings(fileArray);
 				
 				//does the compilation
-				compilePass = compilePass AND getCompiler().getTask(osw, fileManager, JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""), fileObjects).call();
+				compilePass = compilePass AND getCompiler().getTask(osw, fileManager, JavaCast("null", ""), options, JavaCast("null", ""), fileObjects).call();
 	        </cfscript>
 		</cfloop>
 		
@@ -87,6 +94,42 @@
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
+
+<cffunction name="addClassLoaderFiles" hint="adds a set of files to the file manager from the urlclassloader" access="private" returntype="array" output="false">
+	<cfargument name="options" hint="the options array" type="array" required="Yes">
+	<cfargument name="classLoader" hint="URLClassloader to use as the parent for compilation" type="any" required="true">
+	<cfargument name="directoryArray" hint="array of directories to compile" type="array" required="Yes">
+	<cfscript>
+		var urls = 0;
+		var url = 0;
+		var classPaths = createObject("java", "java.lang.StringBuilder").init();
+		var File = createObject("java", "java.io.File");
+		var path = 0;
+    </cfscript>
+	
+	<!--- add in the classloader, and all its parents --->	
+	<cfloop condition="#structKeyExists(arguments, "classLoader")#">
+		<cfset urls = arguments.classLoader.getURLs()>
+		<cfloop array="#urls#" index="url">
+			<cfscript>
+				classPaths.append(url.getFile()).append(File.pathSeparator);
+            </cfscript>
+		</cfloop>
+		<cfset arguments.classLoader = arguments.classLoader.getParent()>
+	</cfloop>
+	
+	<!--- add in the folders we are compiling from --->
+	<cfloop array="#arguments.directoryArray#" index="path">
+		<cfset classPaths.append(path).append(File.pathSeparator)>  
+	</cfloop>
+	
+	<cfscript>
+		ArrayAppend(arguments.options, "-classpath");
+		ArrayAppend(arguments.options, classPaths.toString());
+		
+		return arguments.options;
+    </cfscript>
+</cffunction>
 
 <cffunction name="getCompiler" access="private" returntype="any" output="false">
 	<cfreturn instance.Compiler />

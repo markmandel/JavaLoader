@@ -45,7 +45,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			//can't use above, as doesn't work in some... things
 
 			arguments.parentClassLoader = getPageContext().getClass().getClassLoader();
-
+			
 			//arguments.parentClassLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
 			//can't use the above, it doesn't have the CF stuff in it.
 		}		
@@ -103,7 +103,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "1.0.a">
+	<cfreturn "1.0.e">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
@@ -145,7 +145,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 		if(isObject(getParentClassLoader()))
 		{
-			classLoader = networkClassLoaderProxy.init(arguments.parentClassLoader);
+			classLoader = networkClassLoaderProxy.init(getParentClassLoader());
 		}
 		else
 		{
@@ -178,7 +178,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
     </cfscript>
 	<cftry>
 		<cfdirectory action="create" directory="#path#">
-	
+
 		<!--- first we copy the source to our tmp dir --->
 		<cfloop array="#getSourceDirectories()#" index="dir">
 			<cfset directoryCopy(dir, path)>
@@ -186,19 +186,19 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		
 		<!--- then we compile it, and grab that jar --->
 		<cfset paths = [path]>
-		<cfset jar = getJavaCompiler().compile(paths)>
+		<cfset jar = getJavaCompiler().compile(paths, getURLClassLoader())>
 		
 		<!--- add that jar to the classloader --->
 		<cfset file = createObject("java", "java.io.File").init(jar)>
 		<cfset getURLClassLoader().addURL(file.toURL())>
 		
 		<!--- delete the files --->
-		<cfdirectory action="delete" recurse="true" directory="#path#">
-		<cffile action="delete" file="#jar#" />
+		<!---<cfdirectory action="delete" recurse="true" directory="#path#">
+		<cffile action="delete" file="#jar#" />--->
 		
 		<cfcatch>
 			<!--- make sure the files are deleted --->
-			<cfdirectory action="delete" recurse="true" directory="#path#">
+			<!---<cfdirectory action="delete" recurse="true" directory="#path#">--->
 		
 			<cfrethrow>
 		</cfcatch>
