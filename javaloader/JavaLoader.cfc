@@ -57,7 +57,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		
 		loadClasses();
 
-		if(structKeyExists(arguments, "sourceDirectories"))
+		if(structKeyExists(arguments, "sourceDirectories") AND ArrayLen(arguments.sourceDirectories))
 		{
 			setJavaCompiler(createObject("component", "JavaCompiler").init(arguments.compileDirectory));
 			setSourceDirectories(arguments.sourceDirectories);
@@ -167,7 +167,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
     </cfscript>
 </cffunction>
 
-<cffunction name="compileSource" hint="compile dynamic source" access="private" returntype="string" output="false">
+<cffunction name="compileSource" hint="compile dynamic source" access="private" returntype="void" output="false">
 	<cfscript>
 		var dir = 0;
 		var path = getCompileDirectory() & "/" & createUUID();
@@ -193,12 +193,18 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		<cfset getURLClassLoader().addURL(file.toURL())>
 		
 		<!--- delete the files --->
-		<cfdirectory action="delete" recurse="true" directory="#path#">
-		<cffile action="delete" file="#jar#" />
+		<cfif directoryExists(path)>
+			<cfdirectory action="delete" recurse="true" directory="#path#">
+		</cfif>
+		<cfif fileExists(jar)>
+			<cffile action="delete" file="#jar#" />
+		</cfif>
 		
 		<cfcatch>
 			<!--- make sure the files are deleted --->
-			<cfdirectory action="delete" recurse="true" directory="#path#">
+			<cfif directoryExists(path)>
+				<cfdirectory action="delete" recurse="true" directory="#path#">
+			</cfif>			
 		
 			<cfrethrow>
 		</cfcatch>
@@ -218,10 +224,18 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 					sort="dateLastModified desc" 
 					name="qLastModified">
 		<cfscript>
-			//get the latest date modified
-			if(dateCompare(lastModified, qlastModified.dateLastModified) eq -1) 
+			//it's possible there are no source files.
+			if(qLastModified.recordCount)
 			{
-				lastModified = qLastModified.dateLastModified;
+				//get the latest date modified
+				if(dateCompare(lastModified, qlastModified.dateLastModified) eq -1) 
+				{
+					lastModified = qLastModified.dateLastModified;
+				}			
+			}
+			else
+			{
+				lastModified = Now();
 			}
         </cfscript>
 	</cfloop>

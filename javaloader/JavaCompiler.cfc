@@ -74,7 +74,10 @@
 	        </cfscript>
 		</cfloop>
 		
-		<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">		
+		<!--- can't do zips on empty directories --->
+		<cfif qFiles.recordCount>
+			<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">		
+		</cfif>
 	</cfloop>
 	
 	<cfif NOT compilePass>
