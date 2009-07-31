@@ -193,12 +193,12 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		<cfset getURLClassLoader().addURL(file.toURL())>
 		
 		<!--- delete the files --->
-		<!---<cfdirectory action="delete" recurse="true" directory="#path#">
-		<cffile action="delete" file="#jar#" />--->
+		<cfdirectory action="delete" recurse="true" directory="#path#">
+		<cffile action="delete" file="#jar#" />
 		
 		<cfcatch>
 			<!--- make sure the files are deleted --->
-			<!---<cfdirectory action="delete" recurse="true" directory="#path#">--->
+			<cfdirectory action="delete" recurse="true" directory="#path#">
 		
 			<cfrethrow>
 		</cfcatch>

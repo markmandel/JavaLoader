@@ -24,10 +24,26 @@ public class CFCProxyTest
 		return foo;
 	}
 	
+	public IFoo getDynamicProxy(String cfc) throws Throwable 
+	{
+		Class<?>[] interfaces = { IFoo.class };
+		
+		IFoo foo = (IFoo)CFCDynamicProxy.createInstance(cfc, interfaces);
+		
+		return foo;
+	}
+	
 	public Object runDynamicProxyFoo(TemplateProxy cfc)
 	{
 		IFoo foo = getDynamicProxy(cfc);
 		
 		return foo.foo("Hello from dyanmic proxy");
 	}
+	
+	public Object runDynamicProxyFoo(String path) throws Throwable
+	{
+		IFoo foo = getDynamicProxy(path);
+		
+		return foo.foo("Hello from dyanmic proxy");
+	}	
 }

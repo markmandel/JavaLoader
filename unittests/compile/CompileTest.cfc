@@ -72,7 +72,7 @@
 		AssertTrue(local.check, "An error should have been thrown on the compilation");
 		
 		//reset it
-		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java", instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java.bad");		
+		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java", instance.srcPath & "/helloworld/ut1/HelloWorldBroken.java.bad");
     </cfscript>
 </cffunction>
 
