@@ -6,5 +6,7 @@
 <Mappings>
 </Mappings>
 <VariableMappings>
+<VariableName>instance.loader</VariableName>
+<MappedTo>javaloader.JavaLoader</MappedTo>
 </VariableMappings>
 </ResourceDetails>

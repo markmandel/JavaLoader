@@ -103,7 +103,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "1.0.e">
+	<cfreturn "1.0.d">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
@@ -196,6 +196,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		<cfif directoryExists(path)>
 			<cfdirectory action="delete" recurse="true" directory="#path#">
 		</cfif>
+		
 		<cfif fileExists(jar)>
 			<cffile action="delete" file="#jar#" />
 		</cfif>

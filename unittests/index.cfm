@@ -2,7 +2,7 @@
 <cfinvoke component="mxunit.runner.DirectoryTestSuite"
 			method="run"
 			directory="#expandPath('/unittests')#"
-			componentPath="ut.unittests"
+			componentPath="unittests"
 			recurse="true"
 			excludes=""
 			returnvariable="results" />

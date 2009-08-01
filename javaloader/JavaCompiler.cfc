@@ -74,6 +74,8 @@
 	        </cfscript>
 		</cfloop>
 		
+		<!--- do this again, as if there ARE files in it, we should create a .jar --->
+		<cfdirectory action="list" directory="#directoryToCompile#" name="qFiles">
 		<!--- can't do zips on empty directories --->
 		<cfif qFiles.recordCount>
 			<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">		

@@ -31,7 +31,32 @@
 	<cfscript>
 		local = {};
 		
-		local.spring = instance.loader.create("org.springframework.context.support.FileSystemXmlApplicationContext").init();
+		//don't ask me why we need the extra "/", but we do.
+		local.path = "file://" & getDirectoryFromPath(getMetaData(this).path) & "/xml/spring.xml";
+		
+		//create our properties file
+		local.properties = createObject("java", "java.util.Properties").init();
+		local.properties.put("rootPath", expandPath("/"));
+		
+		local.fo = createObject("java", "java.io.FileOutputStream").init(instance.srcPath & "/spring/ut3/default.properties");
+		
+		local.properties.store(local.fo, "Default Properties");
+		
+		try
+        {
+        	local.spring = instance.loader.create("org.springframework.context.support.FileSystemXmlApplicationContext").init();
+			
+			local.spring.setClassLoader(instance.loader.getURLClassLoader());
+			
+			local.spring.setConfigLocation(local.path);
+			
+			local.spring.refresh();
+        }
+        catch(Any e)
+        {
+			debug(e.stacktrace);
+			fail("Error occured");
+        }
     </cfscript>
 </cffunction>
 
