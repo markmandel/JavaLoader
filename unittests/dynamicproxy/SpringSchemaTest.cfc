@@ -10,6 +10,7 @@
 		
 		local.libpaths = [];
 		ArrayAppend(local.libpaths, expandPath("/javaloader/support/cfcdynamicproxy/lib/cfcdynamicproxy.jar"));
+		ArrayAppend(local.libpaths, expandPath("/javaloader/support/spring/lib/spring-coldfusion.jar"));
 	</cfscript>
 	
 	<cfdirectory action="list" directory="#instance.libPath#/spring" name="local.qJars" filter="*.jar">
@@ -19,7 +20,7 @@
 	</cfloop> 
 	
 	<cfscript>
-		local.srcparths = [instance.srcPath & "/spring"];
+		local.srcparths = [instance.srcPath & "/spring", instance.srcPath & "/dynamicproxy"];
 		
 		instance.loader = createObject("component", "javaloader.JavaLoader").init(loadPaths=local.libpaths, loadColdFusionClassPath=true, sourceDirectories=local.srcparths);		
     </cfscript>
@@ -57,6 +58,10 @@
 			debug(e.stacktrace);
 			fail("Error occured");
         }
+		
+		local.foo = local.spring.getBean("foo");
+		
+		debug(local.foo);
     </cfscript>
 </cffunction>
 
