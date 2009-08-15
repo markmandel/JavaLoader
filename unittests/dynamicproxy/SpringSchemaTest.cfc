@@ -56,12 +56,16 @@
         catch(Any e)
         {
 			debug(e.stacktrace);
-			fail("Error occured");
+			fail("Error occured: #e.stacktrace#");
         }
 		
 		local.foo = local.spring.getBean("foo");
 		
 		debug(local.foo);
+		
+		assertEquals("Hello!", local.foo.foo("Hello!"));
+		
+		assertEquals("I could not find my method: doesNotExist", local.foo.doesNotExist());		
     </cfscript>
 </cffunction>
 

@@ -8,13 +8,9 @@
 	http://www.compoundtheory.com/javaloader/schema/coldfusion http://www.compoundtheory.com/javaloader/schema/spring-coldfusion.xsd">
 	
 	<coldfusion:cfc id="foo" 
-					script-source="${rootPath}/unittests/dynamicproxy/SimpleBean.cfc"
+					script-source="file://${rootPath}/unittests/dynamicproxy/SimpleBean.cfc"
 					script-interfaces="ut2.IFoo"
 					/>
-	
-<!--	<coldfusion:cfc id="foo"-->
-<!--					script-source="file://${rootPath}/unittests/dynamicproxy/SimpleBean.cfc" -->
-<!--					script-interfaces="ut2.IFoo" />-->
 	
 	<context:property-placeholder location="classpath:ut3/default.properties" />
 </beans>
