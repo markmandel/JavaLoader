@@ -7,4 +7,4 @@
 			excludes=""
 			returnvariable="results" />
 
- <cfoutput> #results.getResultsOutput('html')# </cfoutput>
+ <cfoutput> #results.getResultsOutput('extjs')# </cfoutput>

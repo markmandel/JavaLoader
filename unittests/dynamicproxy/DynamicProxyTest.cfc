@@ -24,7 +24,7 @@
 		
 		local.cfcProxyTest = instance.loader.create("ut2.CFCProxyTest").init();
 		
-		local.bar = createObject("component", "SimpleBean");
+		local.bar = createObject("component", "cfc.SimpleBean");
 		
 		local.proxy = local.cfcProxyTest.getDynamicProxy(local.bar);
 		
@@ -45,7 +45,16 @@
 		
 		AssertTrue(local.catch, "Exception should be thrown");
 		
-		debug(local.cfcProxyTest);
+		debug(local.proxy);
+		
+		local.interfaces = local.proxy.getClass().getInterfaces(); 
+		for(local.i = 1; local.i lte arraylen(local.interfaces); local.i++)
+		{
+			local.class = local.interfaces[local.i];
+			debug(local.class.toString());
+			
+			assertEquals(local.class.getName(), "ut2.IFoo");
+		}
 		
 		AssertEquals(local.cfcProxyTest.runDynamicProxyFoo(local.bar), "Hello from dyanmic proxy");
     </cfscript>
@@ -57,7 +66,7 @@
 		
 		local.cfcProxyTest = instance.loader.create("ut2.CFCProxyTest").init();
 		
-		local.path = expandPath("/unittests/dynamicproxy/SimpleBean.cfc");
+		local.path = expandPath("/unittests/dynamicproxy/cfc/SimpleBean.cfc");
 		
 		local.proxy = local.cfcProxyTest.getDynamicProxy(local.path);
 		
@@ -84,7 +93,7 @@
 
 <cffunction name="requestScopeTest" hint="test if the request scope passes through" access="public" returntype="void" output="false">
 	<cfscript>
-		local.bar = createObject("component", "RequestBean");
+		local.bar = createObject("component", "cfc.RequestBean");
 		
 		local.cfcProxyTest = instance.loader.create("ut2.CFCProxyTest").init();
 		
@@ -94,7 +103,7 @@
 		
 		AssertEquals("yadda :: Hello", local.proxy.foo("Hello"));
 		
-		local.path = expandPath("/unittests/dynamicproxy/RequestBean.cfc");
+		local.path = expandPath("/unittests/dynamicproxy/cfc/RequestBean.cfc");
 		
 		local.proxy = local.cfcProxyTest.getDynamicProxy(local.path);
 		
@@ -106,7 +115,7 @@
 
 <cffunction name="applicationScopeTest" hint="test if the app scope passes through" access="public" returntype="void" output="false">
 	<cfscript>
-		local.bar = createObject("component", "ApplicationBean");
+		local.bar = createObject("component", "cfc.ApplicationBean");
 		
 		local.cfcProxyTest = instance.loader.create("ut2.CFCProxyTest").init();
 		
@@ -116,7 +125,7 @@
 		
 		AssertEquals("yadda :: Hello", local.proxy.foo("Hello"));
 		
-		local.path = expandPath("/unittests/dynamicproxy/ApplicationBean.cfc");
+		local.path = expandPath("/unittests/dynamicproxy/cfc/ApplicationBean.cfc");
 		
 		local.proxy = local.cfcProxyTest.getDynamicProxy(local.path);
 		
@@ -128,7 +137,7 @@
 
 <cffunction name="sessionScopeTest" hint="test if the session scope passes through" access="public" returntype="void" output="false">
 	<cfscript>
-		local.bar = createObject("component", "SessionBean");
+		local.bar = createObject("component", "cfc.SessionBean");
 		
 		local.cfcProxyTest = instance.loader.create("ut2.CFCProxyTest").init();
 		
@@ -138,7 +147,7 @@
 		
 		AssertEquals("yadda :: Hello", local.proxy.foo("Hello"));
 		
-		local.path = expandPath("/unittests/dynamicproxy/SessionBean.cfc");
+		local.path = expandPath("/unittests/dynamicproxy/cfc/SessionBean.cfc");
 		
 		local.proxy = local.cfcProxyTest.getDynamicProxy(local.path);
 		
@@ -150,7 +159,7 @@
 
 <cffunction name="errorInCodeTest" hint="test if the session scope passes through" access="public" returntype="void" output="false">
 	<cfscript>
-		local.bar = createObject("component", "SessionBean");
+		local.bar = createObject("component", "cfc.SessionBean");
 		
 		local.cfcProxyTest = instance.loader.create("ut2.CFCProxyTest").init();
 		

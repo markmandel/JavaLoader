@@ -8,9 +8,29 @@
 	http://www.compoundtheory.com/javaloader/schema/coldfusion http://www.compoundtheory.com/javaloader/schema/spring-coldfusion.xsd">
 	
 	<coldfusion:cfc id="foo" 
-					script-source="file://${rootPath}/unittests/dynamicproxy/SimpleBean.cfc"
+					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/SimpleBean.cfc"
 					script-interfaces="ut2.IFoo"
 					/>
+					
+	<coldfusion:cfc id="dibean" script-interfaces="ut3.IDIBean" 
+					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/DIBean.cfc"
+					init-method="init"
+					scope="prototype"
+					>
+		<coldfusion:property name="stringValue" ref="StringValue" />
+	</coldfusion:cfc>
+	
+	<coldfusion:cfc id="dibeanSingle" script-interfaces="ut3.IDIBean" 
+					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/DIBean.cfc"
+					init-method="init"
+					autowire="byType"
+					scope="singleton"
+					>
+	</coldfusion:cfc>
+	
+	<bean id="StringValue" class="java.lang.String">
+		<constructor-arg value="This is my String!"></constructor-arg>
+	</bean>
 	
 	<context:property-placeholder location="classpath:ut3/default.properties" />
 </beans>
