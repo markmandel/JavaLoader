@@ -23,7 +23,7 @@
 	<coldfusion:cfc id="dibeanSingle" script-interfaces="ut3.IDIBean" 
 					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/DIBean.cfc"
 					init-method="init"
-					autowire="byType"
+					autowire="byName"
 					scope="singleton"
 					>
 	</coldfusion:cfc>
@@ -31,6 +31,8 @@
 	<bean id="StringValue" class="java.lang.String">
 		<constructor-arg value="This is my String!"></constructor-arg>
 	</bean>
+	
+	<bean id="bar" class="ut3.Bar" />
 	
 	<context:property-placeholder location="classpath:ut3/default.properties" />
 </beans>

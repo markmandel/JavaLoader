@@ -107,7 +107,7 @@
 			fail(e.stacktrace);
         }
 		
-		local.interfaces = local.dibean.getClass().getInterfaces(); 
+		local.interfaces = local.dibean.getClass().getMethods(); 
 		for(local.i = 1; local.i lte arraylen(local.interfaces); local.i++)
 		{
 			local.class = local.interfaces[local.i];
@@ -117,10 +117,9 @@
 		assertEquals("I've been init", local.dibean.getInitValue());
 		assertEquals("I've been init", local.dibean2.getInitValue());
 		
-		assertEquals("This is my String!", local.dibean.getStringValue());
-		assertEquals("This is my String!", local.dibean2.getStringValue());
+		assertEquals("Foo!", local.dibean.getBar().getValue());
 		
-		assertNotSame(local.dibean, local.dibean2);
+		assertSame(local.dibean, local.dibean2);
     </cfscript>
 </cffunction>
 

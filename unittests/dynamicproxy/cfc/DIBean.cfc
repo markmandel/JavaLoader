@@ -23,6 +23,16 @@
 	<cfset instance.StringValue = arguments.StringValue />
 </cffunction>
 
+<cffunction name="getBar" access="public" returntype="any" output="false">
+	<cfreturn instance.Bar />
+</cffunction>
+
+<cffunction name="setBar" access="public" returntype="void" output="false">
+	<cfargument name="Bar" type="any" required="true">
+	<cfdump var="#arguments#" output="console">
+	<cfset instance.Bar = arguments.Bar />
+</cffunction>
+
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
