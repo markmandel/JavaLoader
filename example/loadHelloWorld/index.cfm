@@ -1,5 +1,5 @@
 <html>
-	<head>JavaLoader Example</head>
+	<head><title>JavaLoader JAR Load Example</title></head>
 	<style type="text/css">
 		body {
 			font-family: Verdana, Helvetica, san-serif;
