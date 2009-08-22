@@ -46,7 +46,7 @@
 			interfaces = ["java.util.Comparator"];
 			
 			//create the proxy we will pass to the Collections object
-			comparatorProxy = CFCDynamicProxy.createInstance(comparator, JavaCast("String[]", interfaces));
+			comparatorProxy = CFCDynamicProxy.createInstance(comparator, interfaces);
 			
 			Collections.sort(stringArray, comparatorProxy);
         </cfscript>
