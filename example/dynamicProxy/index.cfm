@@ -31,10 +31,10 @@
 			ArrayAppend(libpaths, expandPath("/javaloader/support/cfcdynamicproxy/lib/cfcdynamicproxy.jar"));
 			
 			//we HAVE to load the ColdFusion class path to use the dynamic proxy, as it uses ColdFusion's classes
-			loader = createObject("component", "javaloader.JavaLoader").init(loadPaths=local.libpaths, loadColdFusionClassPath=true);
+			loader = createObject("component", "javaloader.JavaLoader").init(loadPaths=libpaths, loadColdFusionClassPath=true);
 			
 			//grab us Collections
-			createObject("java", "java.util.Collections");
+			Collections = createObject("java", "java.util.Collections");
 
 			//get a reference to the dynamic proxy class
 			CFCDynamicProxy = loader.create("com.compoundtheory.coldfusion.cfc.CFCDynamicProxy");
@@ -46,7 +46,7 @@
 			interfaces = ["java.util.Comparator"];
 			
 			//create the proxy we will pass to the Collections object
-			comparatorProxy = CFCDynamicProxy.createInstance(comparator, interfaces);
+			comparatorProxy = CFCDynamicProxy.createInstance(comparator, JavaCast("String[]", interfaces));
 			
 			Collections.sort(stringArray, comparatorProxy);
         </cfscript>
