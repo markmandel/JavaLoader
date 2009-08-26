@@ -3,7 +3,9 @@
 <cfscript>
 	this.name = "JavaLoader Unit Tests";
 	this.mappings["/ut"] = expandPath("/");
-	this.sessionmanagement = true;	
+	this.sessionmanagement = true;
+	
+	structClear(server);	
 </cfscript>
 
 </cfcomponent>
