@@ -1,5 +1,5 @@
 <html>
-	<head><title>JavaLoader Dynamic Proxy Example</title></head>
+	<head><title>JavaLoader Spring Example</title></head>
 	<style type="text/css">
 		body {
 			font-family: Verdana, Helvetica, san-serif;
