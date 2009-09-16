@@ -9,11 +9,13 @@
 	
 	<coldfusion:cfc id="foo" 
 					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/SimpleBean.cfc"
+					script-source-relative="false"
 					script-interfaces="ut2.IFoo"
 					/>
 					
 	<coldfusion:cfc id="dibean" script-interfaces="ut3.IDIBean" 
 					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/DIBean.cfc"
+					script-source-relative="false"
 					init-method="init"
 					scope="prototype"
 					>
@@ -22,11 +24,17 @@
 	
 	<coldfusion:cfc id="dibeanSingle" script-interfaces="ut3.IDIBean" 
 					script-source="file://${rootPath}/unittests/dynamicproxy/cfc/DIBean.cfc"
+					script-source-relative="false"
 					init-method="init"
 					autowire="byName"
 					scope="singleton"
 					>
 	</coldfusion:cfc>
+
+	<coldfusion:cfc id="relativeBean" 
+					script-source="file:///unittests/dynamicproxy/cfc/SimpleBean.cfc"
+					script-interfaces="ut2.IFoo"
+					/>
 	
 	<bean id="StringValue" class="java.lang.String">
 		<constructor-arg value="This is my String!"></constructor-arg>

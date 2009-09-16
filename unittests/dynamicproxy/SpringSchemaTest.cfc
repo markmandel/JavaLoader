@@ -61,6 +61,39 @@
     </cfscript>
 </cffunction>
 
+<cffunction name="relativeLoadSpringTest" hint="can we load spring and get a bean, that has been defined relatively?" access="public" returntype="void" output="false">
+	<cfscript>
+		local = {};
+		
+		try
+        {
+			local.spring = loadSpring();
+        }
+        catch(Any e)
+        {
+			debug(e.stacktrace);
+			fail("Error occured: #e.stacktrace#");
+        }
+		
+		local.foo = local.spring.getBean("relativeBean");
+		
+		debug(local.foo);
+		
+		assertEquals("Hello!", local.foo.foo("Hello!"));
+		
+		assertEquals("I could not find my method: doesNotExist", local.foo.doesNotExist());
+		
+		local.interfaces = local.foo.getClass().getInterfaces(); 
+		for(local.i = 1; local.i lte arraylen(local.interfaces); local.i++)
+		{
+			local.class = local.interfaces[local.i];
+			debug(local.class.toString());
+			
+			assertEquals(local.class.getName(), "ut2.IFoo");
+		}
+    </cfscript>
+</cffunction>
+
 <cffunction name="manualDITest" hint="test the init function" access="public" returntype="void" output="false">
 	<cfscript>
 		var local = {};

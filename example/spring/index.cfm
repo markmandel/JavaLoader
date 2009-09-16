@@ -40,21 +40,6 @@
 			//We have to load the ColdFusion classpath as the ColdFusion dynamic proxy requires it.			
 			loader = createObject("component", "javaloader.JavaLoader").init(loadPaths=libpaths, loadColdFusionClassPath=true, sourceDirectories=srcpaths);
 			
-			/*
-			The easiest way I have found to pass parameters to Spring, is to dynamically create a .properties file in our 
-			source directory, so we can point to it in our Spring configuration as a a <context:property-placeholder>
-			*/
-			
-			//create our properties file
-			properties = createObject("java", "java.util.Properties").init();
-			
-			//this is the root path to this example directory
-			properties.put("rootPath", expandPath("./"));
-			
-			//create a fileOutputStream to write it to disk, easiest way			
-			fo = createObject("java", "java.io.FileOutputStream").init(srcpaths[1] & "/default.properties");
-			properties.store(fo, "Default Properties");
-
 			//this is the path to our XML file. Note the 'file://' prefix, this is important to Spring
 			path = "file://" & expandPath("./spring.xml");
 			
