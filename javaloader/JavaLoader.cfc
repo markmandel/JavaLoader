@@ -98,12 +98,12 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	</cfscript>
 </cffunction>
 
-<cffunction name="getURLClassLoader" hint="Returns the java.net.URLClassLoader in case you need access to it" access="public" returntype="any" output="false">
+<cffunction name="getURLClassLoader" hint="Returns the com.compoundtheory.classloader.NetworkClassLoader in case you need access to it" access="public" returntype="any" output="false">
 	<cfreturn instance.ClassLoader />
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "1.0.alpha">
+	<cfreturn "1.0.alpha.1">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
