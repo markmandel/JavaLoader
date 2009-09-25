@@ -6,6 +6,8 @@ public class HelloWorld
 	
 	public HelloWorld()
 	{
+		//this is just here to see if dependent objects get added
+		new Dependency();
 	}
 	
 	public HelloWorld(String msg)

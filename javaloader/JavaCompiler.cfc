@@ -7,9 +7,9 @@
 	<cfscript>
 		var data = {};
 		var defaultCompiler = "com.sun.tools.javac.api.JavacTool";
-		
+
 		//we have to manually go looking for the compiler
-		
+
 		try
 		{
 			data.compiler = getPageContext().getClass().getClassLoader().loadClass(defaultCompiler).newInstance();
@@ -19,20 +19,20 @@
 			println("Error loading compiler:");
 			println(exc.toString());
 		}
-		
+
 		/*
-		If not by THIS point do we have a compiler, then throw an exception 
+		If not by THIS point do we have a compiler, then throw an exception
 		 */
 		if(NOT StructKeyExists(data, "compiler"))
 		{
-			throwException("javaCompiler.NoCompilerAvailableException", 
+			throwException("javaCompiler.NoCompilerAvailableException",
 				"No Java Compiler is available",
 				"There is no Java Compiler available. Make sure tools.jar is in your classpath and you are running Java 1.6+");
 		}
-		
+
 		setCompiler(data.compiler);
 		setJarDirectory(arguments.jarDirectory);
-		
+
 		return this;
 	</cfscript>
 </cffunction>
@@ -44,7 +44,7 @@
 		//setup file manager with default exception handler, default locale, and default character set
 		var fileManager = getCompiler().getStandardFileManager(JavaCast("null", ""), JavaCast("null", ""), JavaCast("null", ""));
 		var qFiles = 0;
-		var fileArray = 0;
+		var fileArray = [];
 		var directoryToCompile = 0;
 		var fileObjects = 0;
 		var jarName = getJarDirectory() & "/" & createUUID() & ".jar";
@@ -52,43 +52,44 @@
 		var osw = createObject("java", "java.io.StringWriter").init();
 		var options = [];
     </cfscript>
-	
+
 	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
 		<cfdirectory action="list" directory="#directoryToCompile#" name="qFiles" recurse="true" filter="*.java">
-		
+
 		<cfloop query="qFiles">
 			<cfscript>
-				fileArray = [];
-				
 				ArrayAppend(fileArray, qFiles.directory & "/" & qFiles.name);
-				
-				if(structKeyExists(arguments, "classLoader"))
-				{
-					options = addClassLoaderFiles(options, arguments.classLoader, arguments.directoryArray);
-				}
-				
-				fileObjects = fileManager.getJavaFileObjectsFromStrings(fileArray);
-				
-				//does the compilation
-				compilePass = compilePass AND getCompiler().getTask(osw, fileManager, JavaCast("null", ""), options, JavaCast("null", ""), fileObjects).call();
 	        </cfscript>
 		</cfloop>
-		
+
+		<cfscript>
+			if(structKeyExists(arguments, "classLoader"))
+			{
+				options = addClassLoaderFiles(options, arguments.classLoader, arguments.directoryArray);
+			}
+
+			fileObjects = fileManager.getJavaFileObjectsFromStrings(fileArray);
+
+			//does the compilation
+			compilePass = compilePass AND getCompiler().getTask(osw, fileManager, JavaCast("null", ""), options, JavaCast("null", ""), fileObjects).call();
+        </cfscript>
+
 		<!--- do this again, as if there ARE files in it, we should create a .jar --->
 		<cfdirectory action="list" directory="#directoryToCompile#" name="qFiles">
+
 		<!--- can't do zips on empty directories --->
 		<cfif qFiles.recordCount>
-			<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">		
+			<cfzip action="zip" file="#jarName#" recurse="yes" source="#directoryToCompile#" overwrite="no">
 		</cfif>
 	</cfloop>
-	
+
 	<cfif NOT compilePass>
 		<cffile action="delete" file="#jarName#">
 		<cfset throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString())>
 	</cfif>
 
 	<!--- we won't bother with an manifest, as we don't really need one --->
-	
+
 	<cfreturn jarName />
 </cffunction>
 
@@ -111,8 +112,8 @@
 		var File = createObject("java", "java.io.File");
 		var path = 0;
     </cfscript>
-	
-	<!--- add in the classloader, and all its parents --->	
+
+	<!--- add in the classloader, and all its parents --->
 	<cfloop condition="#structKeyExists(arguments, "classLoader")#">
 		<cfset urls = arguments.classLoader.getURLs()>
 		<cfloop array="#urls#" index="url">
@@ -122,16 +123,16 @@
 		</cfloop>
 		<cfset arguments.classLoader = arguments.classLoader.getParent()>
 	</cfloop>
-	
+
 	<!--- add in the folders we are compiling from --->
 	<cfloop array="#arguments.directoryArray#" index="path">
-		<cfset classPaths.append(path).append(File.pathSeparator)>  
+		<cfset classPaths.append(path).append(File.pathSeparator)>
 	</cfloop>
-	
+
 	<cfscript>
 		ArrayAppend(arguments.options, "-classpath");
 		ArrayAppend(arguments.options, classPaths.toString());
-		
+
 		return arguments.options;
     </cfscript>
 </cffunction>
