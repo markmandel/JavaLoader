@@ -48,7 +48,6 @@
 		var directoryToCompile = 0;
 		var fileObjects = 0;
 		var jarName = getJarDirectory() & "/" & createUUID() & ".jar";
-		var compilePass = true;
 		var osw = createObject("java", "java.io.StringWriter").init();
 		var options = [];
     </cfscript>
@@ -69,11 +68,21 @@
 			}
 
 			fileObjects = fileManager.getJavaFileObjectsFromStrings(fileArray);
-
-			//does the compilation
-			compilePass = compilePass AND getCompiler().getTask(osw, fileManager, JavaCast("null", ""), options, JavaCast("null", ""), fileObjects).call();
         </cfscript>
+	</cfloop>
 
+	<cfscript>
+		//does the compilation
+		compilePass = getCompiler().getTask(osw, fileManager, JavaCast("null", ""), options, JavaCast("null", ""), fileObjects).call();
+
+		if(NOT compilePass)
+		{
+			throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString());
+		}
+    </cfscript>
+
+	<!--- wrap it up in a har --->
+	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
 		<!--- do this again, as if there ARE files in it, we should create a .jar --->
 		<cfdirectory action="list" directory="#directoryToCompile#" name="qFiles">
 
@@ -83,18 +92,13 @@
 		</cfif>
 	</cfloop>
 
-	<cfif NOT compilePass>
-		<cffile action="delete" file="#jarName#">
-		<cfset throwException("javacompiler.SourceCompilationException", "There was an error compiling your source code", osw.toString())>
-	</cfif>
-
 	<!--- we won't bother with an manifest, as we don't really need one --->
 
 	<cfreturn jarName />
 </cffunction>
 
 <cffunction name="getVersion" hint="returns the version number" access="public" returntype="string" output="false">
-	<cfreturn "0.1.a" />
+	<cfreturn "0.1.b" />
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
