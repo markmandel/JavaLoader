@@ -50,6 +50,7 @@
 		var jarName = getJarDirectory() & "/" & createUUID() & ".jar";
 		var osw = createObject("java", "java.io.StringWriter").init();
 		var options = [];
+		var compilePass = 0;
     </cfscript>
 
 	<cfloop array="#arguments.directoryArray#" index="directoryToCompile">
