@@ -1,4 +1,8 @@
 
+<cfscript>
+	StructClear(server);
+</cfscript>
+
 <cfinvoke component="mxunit.runner.DirectoryTestSuite"
 			method="run"
 			directory="#expandPath('/unittests')#"

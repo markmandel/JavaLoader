@@ -9,15 +9,6 @@ Website:    http://www.compoundtheory.com
 
 Purpose:    Utlitity class for loading Java Classes
 
-Usage:
-
-Modification Log:
-
-Name			Date			Description
-================================================================================
-Mark Mandel		08/05/2006		Created
-Mark Mandel		22/06/2006		Added verification that the path exists
-
 ------------------------------------------------------------------------------->
 <cfcomponent name="JavaLoader" hint="Loads External Java Classes, while providing access to ColdFusion classes">
 
