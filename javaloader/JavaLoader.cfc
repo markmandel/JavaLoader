@@ -26,6 +26,8 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	instance.static.uuid = "A0608BEC-0AEB-B46A-0E1E1EC5F3CE7C9C";
 </cfscript>
 
+<cfimport taglib="tags" prefix="jl">
+
 <!------------------------------------------- PUBLIC ------------------------------------------->
 
 <cffunction name="init" hint="Constructor" access="public" returntype="JavaLoader" output="false">
@@ -38,23 +40,23 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 	<cfscript>
 		initUseJavaProxyCFC();
-		
+
 		if(arguments.loadColdFusionClassPath)
 		{
 			//arguments.parentClassLoader = createObject("java", "java.lang.Thread").currentThread().getContextClassLoader();
 			//can't use above, as doesn't work in some... things
 
 			arguments.parentClassLoader = getPageContext().getClass().getClassLoader();
-			
+
 			//arguments.parentClassLoader = createObject("java", "java.lang.ClassLoader").getSystemClassLoader();
 			//can't use the above, it doesn't have the CF stuff in it.
-		}		
-		
+		}
+
 		setClassLoadPaths(arguments.loadPaths);
 		setParentClassLoader(arguments.parentClassLoader);
 
 		ensureNetworkClassLoaderOnServerScope();
-		
+
 		loadClasses();
 
 		if(structKeyExists(arguments, "sourceDirectories") AND ArrayLen(arguments.sourceDirectories))
@@ -62,23 +64,23 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			setJavaCompiler(createObject("component", "JavaCompiler").init(arguments.compileDirectory));
 			setSourceDirectories(arguments.sourceDirectories);
 			setCompileDirectory(arguments.compileDirectory);
-			
+
 			compileSource();
-			
+
 			setSourceLastModified(calculateSourceLastModified());
 
 			//do the method switching for non-trusted source
 			if(NOT arguments.trustedSource)
 			{
 				variables.createWithoutCheck = variables.create;
-				
+
 				StructDelete(this, "create");
 				StructDelete(variables, "create");
-	
+
 				this.create = variables.createWithSourceCheck;
 			}
 		}
-		
+
 		return this;
 	</cfscript>
 </cffunction>
@@ -103,7 +105,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "1.0.alpha.1">
+	<cfreturn "1.0.b2">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
@@ -114,7 +116,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfargument name="className" hint="The name of the class to create" type="string" required="Yes">
 	<cfscript>
 		var dateLastModified = calculateSourceLastModified();
-		
+
 		/*
 			If the source has changed in any way, recompile and load
 		*/
@@ -123,10 +125,10 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			loadClasses();
 			compileSource();
 		}
-		
+
 		//if all the comilation goes according to plan, set the date last modified
 		setSourceLastModified(dateLastModified);
-		
+
 		return createWithoutCheck(argumentCollection=arguments);
     </cfscript>
 </cffunction>
@@ -138,7 +140,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		var classLoader = 0;
 		var networkClassLoaderClass = 0;
 		var networkClassLoaderProxy = 0;
-    	    
+
 		networkClassLoaderClass = getServerURLClassLoader().loadClass("com.compoundtheory.classloader.NetworkClassLoader");
 
 		networkClassLoaderProxy = createJavaProxy(networkClassLoaderClass);
@@ -162,7 +164,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 
 			classLoader.addUrl(file.toURL());
 		}
-		
+
 		setURLClassLoader(classLoader);
     </cfscript>
 </cffunction>
@@ -171,42 +173,54 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 	<cfscript>
 		var dir = 0;
 		var path = getCompileDirectory() & "/" & createUUID();
-		
+
 		var paths = 0;
 		var jar = 0;
 		var file = 0;
+		var counter = 1;
+		var len = 0;
+		var directories = 0;
     </cfscript>
 	<cftry>
 		<cfdirectory action="create" directory="#path#">
 
-		<!--- first we copy the source to our tmp dir --->
-		<cfloop array="#getSourceDirectories()#" index="dir">
-			<cfset directoryCopy(dir, path)>
-		</cfloop>
-		
-		<!--- then we compile it, and grab that jar --->
-		<cfset paths = [path]>
-		<cfset jar = getJavaCompiler().compile(paths, getURLClassLoader())>
-		
+		<cfscript>
+			//first we copy the source to our tmp dir
+			directories = getSourceDirectories();
+			len = arraylen(directories);
+			for(; counter lte len; counter = counter + 1)
+			{
+				dir = directories[counter];
+				directoryCopy(dir, path);
+			}
+
+			//then we compile it, and grab that jar
+
+			paths = ArrayNew(1); //have to write it this way so CF7 compiles
+			ArrayAppend(paths, path);
+
+			jar = getJavaCompiler().compile(paths, getURLClassLoader());
+        </cfscript>
+
 		<!--- add that jar to the classloader --->
 		<cfset file = createObject("java", "java.io.File").init(jar)>
 		<cfset getURLClassLoader().addURL(file.toURL())>
-		
+
 		<!--- delete the files --->
 		<cfif directoryExists(path)>
 			<cfdirectory action="delete" recurse="true" directory="#path#">
 		</cfif>
-		
+
 		<cfif fileExists(jar)>
 			<cffile action="delete" file="#jar#" />
 		</cfif>
-		
+
 		<cfcatch>
 			<!--- make sure the files are deleted --->
 			<cfif directoryExists(path)>
 				<cfdirectory action="delete" recurse="true" directory="#path#">
-			</cfif>			
-		
+			</cfif>
+
 			<cfrethrow>
 		</cfcatch>
 	</cftry>
@@ -217,22 +231,31 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		var lastModified = createDate(1900, 1, 1);
 		var dir = 0;
 		var qLastModified = 0;
+		var directories = getSourceDirectories();
+		var len = arraylen(directories);
+		var counter = 0;
     </cfscript>
-	
-	<cfloop array="#getSourceDirectories()#" index="dir">
-		<cfdirectory action="list" directory="#dir#" recurse="true" 
-					type="file" 
-					sort="dateLastModified desc" 
+
+	<!--- cf7 syntax. Yuck. --->
+	<cfloop from="1" to="#len#" index="counter">
+		<cfset dir = directories[counter]>
+		<jl:directory action="list" directory="#dir#" recurse="true"
+					type="file"
+					sort="dateLastModified desc"
 					name="qLastModified">
 		<cfscript>
 			//it's possible there are no source files.
 			if(qLastModified.recordCount)
 			{
 				//get the latest date modified
-				if(dateCompare(lastModified, qlastModified.dateLastModified) eq -1) 
+				if(dateCompare(lastModified, qlastModified.dateLastModified) eq -1)
 				{
-					lastModified = qLastModified.dateLastModified;
-				}			
+					/*
+						This is here, because cfdirectory only ever gives you minute accurate modified
+						date, which is not good enough.
+					*/
+					lastModified = createObject("java", "java.util.Date").init(createObject("java", "java.io.File").init(qLastModified.directory & "/" & qLastModified.name).lastModified());
+				}
 			}
 			else
 			{
@@ -240,7 +263,7 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 			}
         </cfscript>
 	</cfloop>
-	
+
 	<cfreturn lastModified />
 </cffunction>
 
@@ -257,25 +280,27 @@ Mark Mandel		22/06/2006		Added verification that the path exists
 		var counter = 0;
 		var urlClassLoader = 0;
 		var key = instance.static.uuid & "." & getVersion();
-		//server scope uuid
-
-		//we have it already? escape.
-		if(StructKeyExists(server, key))
-		{
-			return;
-		}
-
-		while(iterator.hasNext())
-		{
-			Array.set(urls, counter, createObject("java", "java.io.File").init(iterator.next()).toURL());
-			counter = counter + 1;
-		}
-
-		urlClassLoader = createObject("java", "java.net.URLClassLoader").init(urls);
-
-		//put it on the server scope
-		server[key] = urlClassLoader;
 	</cfscript>
+
+	<cfif NOT StructKeyExists(server, key)>
+    	<cflock name="javaloader.networkclassloader" throwontimeout="true" timeout="60">
+    	<cfscript>
+    		if(NOT StructKeyExists(server, key))
+    		{
+				while(iterator.hasNext())
+				{
+					Array.set(urls, counter, createObject("java", "java.io.File").init(iterator.next()).toURL());
+					counter = counter + 1;
+				}
+
+				urlClassLoader = createObject("java", "java.net.URLClassLoader").init(urls);
+
+				//put it on the server scope
+				server[key] = urlClassLoader;
+			}
+    	</cfscript>
+    	</cflock>
+    </cfif>
 </cffunction>
 
 <cffunction name="createJavaProxy" hint="create a javaproxy, dependent on CF server settings" access="private" returntype="any" output="false">
@@ -427,13 +452,13 @@ Copies a directory.
 
     <cfset var contents = "" />
     <cfset var dirDelim = createObject("java", "java.lang.System").getProperty("file.separator")>
-    
+
     <cfif not(directoryExists(arguments.destination))>
         <cfdirectory action="create" directory="#arguments.destination#">
     </cfif>
-    
+
     <cfdirectory action="list" directory="#arguments.source#" name="contents">
-    
+
     <cfloop query="contents">
         <cfif contents.type eq "file">
             <cffile action="copy" source="#arguments.source#/#name#" destination="#arguments.destination#/#name#" nameconflict="#arguments.nameConflict#">
