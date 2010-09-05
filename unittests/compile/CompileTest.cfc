@@ -9,6 +9,13 @@
     </cfscript>
 </cffunction>
 
+<cffunction name="teardown" hint="tear down function" access="public" returntype="void" output="false">
+	<cfscript>
+	    super.teardown();
+		clean();
+    </cfscript>
+</cffunction>
+
 <cffunction name="simpleCompilerTest" hint="test a simple hello world compilation" access="public" returntype="void" output="false">
 	<cfscript>
 		var local = StructNew();
@@ -131,6 +138,14 @@
 		assertEquals("Hello World", local.helloWorld.hello());
 
 		fileMove(instance.srcPath & "/helloworld/ut1/HelloWorld.java.bak", instance.srcPath & "/helloworld/ut1/HelloWorld.java");
+
+		//now we run it again, to make sure it still works from the stored .jar file
+
+        local.loader = createObject("component", "javaloader.JavaLoader").init(sourceDirectories=local.paths, trustedSource=true);
+
+		local.helloWorld = local.loader.create("ut1.HelloWorld").init();
+
+		assertEquals(local.helloWorld.hello(), "Hello World");
     </cfscript>
 </cffunction>
 

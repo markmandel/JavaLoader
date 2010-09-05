@@ -9,6 +9,11 @@
     </cfscript>
 </cffunction>
 
+
+<cffunction name="teardown" hint="tear down function" access="public" returntype="void" output="false">
+
+</cffunction>
+
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
@@ -23,12 +28,12 @@
 	<cfloop query="local.qClasses">
 		<cffile action="delete" file="#directory#/#name#">
 	</cfloop>
-	
+
 	<cfdirectory action="list" recurse="true" directory="#expandPath('/javaloader/tmp')#" filter="*.jar" name="local.qJars">
-	
+
 	<cfloop query="local.qJars">
 		<cffile action="delete" file="#directory#/#name#">
-	</cfloop>	
+	</cfloop>
 </cffunction>
 
 </cfcomponent>
