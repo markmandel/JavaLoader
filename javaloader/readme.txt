@@ -1,6 +1,6 @@
-JavaLoader v1.0 Beta 2
+JavaLoader v1.0
 Author: Mark Mandel
-Date: 20 January 2010
+Date: 10 September 2010
 
 Documentation can now be found at:
 http://www.compoundtheory.com/javaloader/docs/
