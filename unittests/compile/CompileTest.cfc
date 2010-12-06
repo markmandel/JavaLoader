@@ -1,4 +1,4 @@
-<cfcomponent hint="unit test for compilation" extends="ut.unittests.AbstractTestCase" output="false">
+<cfcomponent hint="unit test for compilation" extends="unittests.AbstractTestCase" output="false">
 
 <!------------------------------------------- PUBLIC ------------------------------------------->
 

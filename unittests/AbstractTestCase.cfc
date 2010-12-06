@@ -22,9 +22,9 @@
 	<cfscript>
 		var local = {};
     </cfscript>
-	
+
 	<cfdirectory action="list" recurse="true" directory="#instance.srcPath#" filter="*.class" name="local.qClasses">
-	
+
 	<cfloop query="local.qClasses">
 		<cffile action="delete" file="#directory#/#name#">
 	</cfloop>
@@ -35,5 +35,13 @@
 		<cffile action="delete" file="#directory#/#name#">
 	</cfloop>
 </cffunction>
+
+<cffunction name="println" hint="" access="private" returntype="void" output="false">
+	<cfargument name="str" hint="" type="string" required="Yes">
+	<cfscript>
+		createObject("Java", "java.lang.System").out.println(arguments.str);
+	</cfscript>
+</cffunction>
+
 
 </cfcomponent>

@@ -1,20 +1,20 @@
-<cfcomponent extends="ut.unittests.AbstractTestCase" output="false">
+<cfcomponent extends="unittests.AbstractTestCase" output="false">
 
 <!------------------------------------------- PUBLIC ------------------------------------------->
 
 <cffunction name="helloWorldTest" hint="test of simple hello world" access="public" returntype="void" output="false">
 	<cfscript>
 		var local = StructNew();
-	
+
 		local.paths = ArrayNew(1);
-		
+
 		local.paths[1] = instance.libPath & "/helloworld.jar";
-		
+
 		local.loader = createObject("component", "javaloader.JavaLoader").init(local.paths);
-		
+
 		local.helloWorld = local.loader.create("HelloWorld").init();
-		
-		assertEquals(local.helloWorld.hello(), "Hello World");     	    
+
+		assertEquals(local.helloWorld.hello(), "Hello World");
     </cfscript>
 </cffunction>
 
@@ -23,14 +23,14 @@
 	>
 	<cfscript>
 		var local = StructNew();
-		    	    
-		local.paths = [];			
-					
+
+		local.paths = [];
+
 		local.paths[1] = instance.libPath & "/helloworld.jar";
-		
+
 		local.loader = createObject("component", "javaloader.JavaLoader").init(local.paths);
-		
-		local.helloWorld = local.loader.create("HelloWorldDoesNotExist").init();					
+
+		local.helloWorld = local.loader.create("HelloWorldDoesNotExist").init();
     </cfscript>
 </cffunction>
 
