@@ -195,7 +195,7 @@
 
 		var thread = createObject("java", "java.lang.Thread").init(proxy);
 
-		thread.run();
+		thread.start();
 
 		thread.join();
 
