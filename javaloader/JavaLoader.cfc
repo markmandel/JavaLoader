@@ -98,7 +98,7 @@ Purpose:    Utlitity class for loading Java Classes
 </cffunction>
 
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
-	<cfreturn "1.0">
+	<cfreturn "1.0.1">
 </cffunction>
 
 <!------------------------------------------- PACKAGE ------------------------------------------->
