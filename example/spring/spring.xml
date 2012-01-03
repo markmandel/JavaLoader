@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:coldfusion="http://www.compoundtheory.com/javaloader/schema/coldfusion"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+	http://www.compoundtheory.com/javaloader/schema/coldfusion http://www.compoundtheory.com/javaloader/schema/spring-coldfusion.xsd"
+	>
+	
+	<!--
+	The script-source points to the relative path to the CFC we wish to instantiate
+	script-interfaces is a comma delimited list of Java Interfaces this CFC's methods match
+	We've also used the init-method to tell Spring to call 'init' when the CFC is instantiated (optional)
+	 -->
+	<coldfusion:cfc id="message" 
+					script-source="file:///example/spring/Message.cfc" 
+					script-interfaces="com.IMessage"
+					init-method="init"
+					/>
+					
+	<!-- This is the Java class we are going to dependency inject with our CFC -->
+	<bean id="messageReceiver" class="com.MessageReceiver">
+		<property name="message" ref="message" />
+	</bean>
+	
+</beans>

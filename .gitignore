@@ -1,0 +1,6 @@
+#ignore these files
+.*
+!.gitignore
+settings.xml
+*.iml
+*.uuid

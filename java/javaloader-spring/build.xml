@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="javaloader-spring" default="dist" basedir=".">
+	<property name="src" location="./src"/>
+	<property name="build" location="./bin"/>
+	<property name="javaloader.path" location="/home/mark/wwwroot/javaloader/"/>
+	<property name="dist" location="${javaloader.path}/javaloader/support/spring/lib/"/>
+	<property name="dist.jar" value="spring-coldfusion.jar" />
+	<property name="dist.src" value="spring-coldfusion-src.zip" />
+	<property name="cf" location="/tmp/coldfusion"/>
+	<property name="cf.lib" location="${cf}/lib"/>
+	<property name="cf.jrun.lib" location="${cf}/runtime/lib"/>
+	<property name="javaloader.dynamicproxy.lib" location="${javaloader.path}/javaloader/support/cfcdynamicproxy/lib" />
+	<property name="spring.lib" location="${javaloader.path}/unittests/lib/spring" />
+
+    <path id="classpath">
+		<fileset dir="${cf.lib}">
+			<include name="cfusion.jar"/>
+		</fileset>
+		<fileset dir="${cf.jrun.lib}">
+			<include name="jrun.jar"/>
+		</fileset>
+    	<fileset dir="${javaloader.dynamicproxy.lib}" includes="*.jar" />
+    	<fileset dir="${spring.lib}" includes="*.jar"/>
+    </path>
+	
+	<target name="dist" depends="compile">
+		<antcall target="jarBuild" />
+		<antcall target="sourceBuild" />
+		<antcall target="upload-xsd"></antcall>
+	</target>
+	
+	<target name="upload-xsd">
+		<input addproperty="scp.do" message="Should we upload the XSD?" validargs="Y,N" />
+		<antcall target="upload-xsd-${scp.do}" />
+	</target>
+	
+	<target name="upload-xsd-N">
+		<echo message="XSD Not Uploaded"></echo>
+	</target>
+	
+	<target name="upload-xsd-Y">
+		<input addproperty="scp.port" message="What is the port for scp?"></input>
+		<input addproperty="scp.username" message="What is the username for scp?"></input>
+		<input addproperty="scp.password" message="What is the password for scp?">
+			<!-- <handler classname="org.apache.tools.ant.input.SecureInputHandler" />-->
+		</input>
+		
+		<scp file="${src}/com/compoundtheory/coldfusion/cfc/spring/config/spring-coldfusion.xsd" 
+				todir="${scp.username}:${scp.password}@www.compoundtheory.com:/home/mark/wwwroot/compoundtheory/javaloader/schema/" 
+				port="${scp.port}"></scp>		
+	</target>
+
+	<target name="compile" depends="clean" description="compile">
+		<javac srcdir="${src}" destdir="${build}" debug="true" 
+				debuglevel="lines,vars,source" classpathref="classpath"
+				target="1.5"
+				/>
+	</target>
+	
+	<target name="jarBuild">
+		<jar jarfile="${dist}/${dist.jar}">
+			<fileset dir="${build}">
+			</fileset>
+			<fileset dir="${src}">
+				<!-- <include name="**/*.xsd"/> -->
+				<include name="**/spring.handlers"/>
+				<include name="**/spring.schemas"/>
+			</fileset>
+		</jar>
+	</target>
+	
+	<target name="sourceBuild">
+	    <zip destfile="${dist}/${dist.src}">
+	      <fileset dir="${src}">
+	      	<exclude name="**/*.class"/>
+	      	<exclude name=".settings/**"/>
+	      	<exclude name=".classpath"/>
+	      	<exclude name=".project"/>
+	      	<exclude name="settings.xml"/>
+		  </fileset>
+	    </zip>
+	</target>
+	
+	<target name="clean" description="clean up" >
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete>
+			<fileset dir="${build}" includes="**/*.class"/>
+		</delete>
+		<delete file="${dist}/${dist.jar}" />
+		<delete file="${dist}/${dist.src}" />
+	</target>
+</project>
