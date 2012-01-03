@@ -95,9 +95,8 @@ public class NetworkClassLoader extends ClassLoader
 
 	/**
 	 * Creates a new instance of the class loader.
-	 * 
-	 * @param delegate
-	 *            /parent class loader.
+	 *
+	 * @param parent the parent classloader
 	 */
 	public NetworkClassLoader(ClassLoader parent)
 	{
@@ -108,9 +107,8 @@ public class NetworkClassLoader extends ClassLoader
 
 	/**
 	 * Sets the parent/delegate class loader.
-	 * 
-	 * @param delegate
-	 *            /parent class loader.
+	 *
+	 * @param parent the parent class loader.
 	 */
 	protected final void setParent(ClassLoader parent)
 	{
@@ -123,8 +121,7 @@ public class NetworkClassLoader extends ClassLoader
 	 * file. If the same URL is added again, the URL is re-opened and this
 	 * zip/jar file is used for serving any future class requests.
 	 * 
-	 * @param URL
-	 *            where to look for the classes.
+	 * @param url where to look for the classes.
 	 */
 	public synchronized void addURL(URL url)
 	{
@@ -245,7 +242,25 @@ public class NetworkClassLoader extends ClassLoader
 	protected byte[] loadClassData(String classname)
 	{
 		String resourceName = classname.replace('.', '/') + ".class";
-		return loadResource(resourceName);
+		byte[] resource = loadResource(resourceName);
+
+		if(resource != null)
+		{
+			//nick'ed from the URLClassLoader
+			int i = classname.lastIndexOf('.');
+			if (i != -1)
+			{
+				String packageName = classname.substring(0, i);
+
+				//check it doesn't exist
+				if(getPackage(packageName) == null)
+				{
+					definePackage(packageName, null, null, null, null, null, null, null);
+				}
+			}
+		}
+
+		return resource;
 	}
 
 	/**
