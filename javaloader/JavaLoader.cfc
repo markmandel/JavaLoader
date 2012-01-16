@@ -97,6 +97,10 @@ Purpose:    Utlitity class for loading Java Classes
 	<cfreturn instance.ClassLoader />
 </cffunction>
 
+<cffunction name="getClassLoadPaths" access="public" returntype="array" output="false">
+	<cfreturn instance.classLoadPaths />
+</cffunction>
+
 <cffunction name="getVersion" hint="Retrieves the version of the loader you are using" access="public" returntype="string" output="false">
 	<cfreturn "1.0.1">
 </cffunction>
@@ -375,10 +379,6 @@ Purpose:    Utlitity class for loading Java Classes
 	</cfloop>
 
 	<cfreturn aJars>
-</cffunction>
-
-<cffunction name="getClassLoadPaths" access="private" returntype="array" output="false">
-	<cfreturn instance.classLoadPaths />
 </cffunction>
 
 <cffunction name="setClassLoadPaths" access="private" returntype="void" output="false">
