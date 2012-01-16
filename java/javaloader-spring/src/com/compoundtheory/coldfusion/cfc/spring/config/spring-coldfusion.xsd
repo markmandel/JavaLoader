@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+			xmlns="http://www.compoundtheory.com/javaloader/schema/coldfusion"
+			xmlns:beans="http://www.springframework.org/schema/beans"
+			xmlns:lang="http://www.springframework.org/schema/lang"
+			targetNamespace="http://www.compoundtheory.com/javaloader/schema/coldfusion" 
+			elementFormDefault="qualified" 
+			attributeFormDefault="unqualified">
+	<xsd:annotation>
+	<xsd:documentation><![CDATA[
+	Defines the elements which can be used in the Spring framework to create
+	ColdFusion components which can then be used with other Spring beans.
+	]]></xsd:documentation>
+	</xsd:annotation>
+	
+	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
+
+	<xsd:element name="cfc" type="cfc">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+	A Spring bean backed by a ColdFusion component definition
+			]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	
+	<xsd:complexType name="cfc">
+		<xsd:complexContent>
+			<xsd:extension base="beans:identifiedType">
+				<xsd:sequence>
+					<xsd:element name="property" type="beans:propertyType" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+	Dynamic language-backed bean definitions can have zero or more properties.
+	Property elements correspond to JavaBean setter methods exposed
+	by the bean classes. Spring supports primitives, references to other
+	beans in the same or related factories, lists, maps and properties.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:attribute name="script-source" type="xsd:string" use="required">
+					<xsd:annotation>
+						<xsd:documentation source="java:org.springframework.core.io.Resource"><![CDATA[
+	The resource containing the script for the dynamic language-backed bean.
+	
+	Examples might be '/WEB-INF/scripts/Anais.groovy', 'classpath:Nin.bsh', etc.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="script-source-relative" default="true" type="xsd:boolean">
+					<xsd:annotation>
+						<xsd:documentation>
+						Whether or not the script source path is an absolute path (false), or a path that is 
+						relative to the ColdFusion web root (true). Defaults to true. 
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="script-interfaces" use="required">
+					<xsd:annotation>
+						<xsd:documentation source="java:java.lang.Class"><![CDATA[
+	The Java interfaces that the dynamic language-backed object is to expose; comma-delimited.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>				
+				<xsd:attribute name="scope" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+	The scope of this scripted bean: typically "singleton" (one shared instance,
+	which will be returned by all calls to getBean with the given id), or
+	"prototype" (independent instance resulting from each call to getBean).
+	Default is "singleton".
+
+	Singletons are most commonly used, and are ideal for multi-threaded
+	service objects. Further scopes, such as "request" or "session", might
+	be supported by extended bean factories (e.g. in a web environment).
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="autowire" default="default">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+	The autowire mode for the scripted bean.
+	Analogous to the 'autowire' attribute on a standard bean definition.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:NMTOKEN">
+							<xsd:enumeration value="default"/>
+							<xsd:enumeration value="no"/>
+							<xsd:enumeration value="byName"/>
+							<xsd:enumeration value="byType"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="dependency-check" default="default">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+	The dependency check setting for the scripted bean.
+	Analogous to the 'dependency-check' attribute on a standard bean definition.
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:NMTOKEN">
+							<xsd:enumeration value="default"/>
+							<xsd:enumeration value="none"/>
+							<xsd:enumeration value="simple"/>
+							<xsd:enumeration value="objects"/>
+							<xsd:enumeration value="all"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="depends-on" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+			The names of the beans that this bean depends on being initialized.
+			The bean factory will guarantee that these beans get initialized
+			before this bean.
+
+			Note that dependencies are normally expressed through bean properties.
+			This property should just be necessary other kinds of dependencies
+			like statics (*ugh*) or database preparation on startup.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="init-method" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+	The name of an initialization method defined on the scripted bean.
+	Analogous to the 'init-method' attribute on a standard bean definition.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="destroy-method" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+	The name of a destruction method defined on the scripted bean.
+	Analogous to the 'destroy-method' attribute on a standard bean definition.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>	
+	
+</xsd:schema>
