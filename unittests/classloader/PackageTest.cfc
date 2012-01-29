@@ -23,7 +23,7 @@
 		var local = {};
 
 		local.string = jl.create("java.lang.String");
-		local.class = string.getClass();
+		local.class = local.string.getClass();
 
 		assertEquals("java.lang.String", local.class.getName());
 

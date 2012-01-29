@@ -1,35 +1,47 @@
-/**
-* created by javaloader. implements the java.util.concurrent.Callable interface
-*/
-component{
+<cfcomponent hint="Implements the java.util.concurrent.Callable interface">
 
+<cfscript>
 	variables.id = 0;
 	variables.name = "";
 	status = "pending";
 	result = { status = status, createts = now() };
+</cfscript>
 
-	function init(numeric id, string name){
+<!------------------------------------------- PUBLIC ------------------------------------------->
+
+<cffunction name="init" hint="Constructor" access="public" returntype="ThingieDoer" output="false">
+	<<cfscript>
 		structAppend(variables, arguments);
 		return this;
-	}
+	</cfscript>
+</cffunction>
 
-	public any function call(){
-		try{
-			writeLog("inside call for id #id#");
-			result.status = "complete";
+<cffunction name="call" hint="call function" access="public" returntype="any" output="false">
+	<cfscript>
+		try
+		{
+			//writeLog("inside call for id #id#");
+			result.status ="complete";
 			result.success = true;
-
-		}catch( any ex ){
-			result.status = "error";
-			result.error = ex;
-			writeLog("Call errored!");
 		}
+		catch( any ex )
+		{
+			result.status ="error";
+			result.error = ex;
+			//writeLog("Call errored!");
+		}
+
 		result.completets = now();
+
 		return result;
-	}
+	</cfscript>
+</cffunction>
 
-	function toString(){
-		return name;
-	}
+<cffunction name="$toString" hint="to a string" access="public" returntype="string" output="false">
+	<cfreturn variables.name />
+</cffunction>
 
-}
+<!------------------------------------------- PACKAGE ------------------------------------------->
+
+<!------------------------------------------- PRIVATE ------------------------------------------->
+</cfcomponent>

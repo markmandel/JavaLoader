@@ -185,57 +185,60 @@
 
 <cffunction name="testDynamicProxyInAnotherThread" hint="testing a dynamic proxy executing in another thread" access="public" returntype="void" output="false">
 	<cfscript>
-		var CFCDynamicProxy = instance.loader.create("com.compoundtheory.coldfusion.cfc.CFCDynamicProxy");
+		var local = {};
+		local.CFCDynamicProxy = instance.loader.create("com.compoundtheory.coldfusion.cfc.CFCDynamicProxy");
 
-		var runnable = createObject("component", "cfc.Runnable").init();
+		local.runnable = createObject("component", "cfc.Runnable").init();
+		local.interfaces = ["java.lang.Runnable"];
+		local.proxy = local.CFCDynamicProxy.createInstance(local.runnable, local.interfaces);
 
-		var proxy = CFCDynamicProxy.createInstance(runnable, ["java.lang.Runnable"]);
+		assertEquals("Foo", local.runnable.getValue());
 
-		assertEquals("Foo", runnable.getValue());
+		local.thread = createObject("java", "java.lang.Thread").init(local.proxy);
 
-		var thread = createObject("java", "java.lang.Thread").init(proxy);
+		local.thread.start();
 
-		thread.start();
+		local.thread.join();
 
-		thread.join();
-
-		assertEquals("Bar", runnable.getValue());
+		assertEquals("Bar", local.runnable.getValue());
     </cfscript>
 </cffunction>
 
 <cffunction name="executorServiceTest" hint="test the executor service with the Dynamic proxy" access="public" returntype="any" output="false">
 	<cfscript>
-		var completionQueue = createObject("java", "java.util.concurrent.LinkedBlockingQueue").init(1000000);
-		var executor = createObject("java", "java.util.concurrent.Executors").newFixedThreadPool(4);
-		var completionService = createObject("java", "java.util.concurrent.ExecutorCompletionService").init(executor, completionQueue);
-		var timeUnit = createObject("java", "java.util.concurrent.TimeUnit");
-		var CFCDynamicProxy = instance.loader.create("com.compoundtheory.coldfusion.cfc.CFCDynamicProxy");
+		var local = {};
+
+		local.completionQueue = createObject("java", "java.util.concurrent.LinkedBlockingQueue").init(1000000);
+		local.executor = createObject("java", "java.util.concurrent.Executors").newFixedThreadPool(4);
+		local.completionService = createObject("java", "java.util.concurrent.ExecutorCompletionService").init(local.executor, local.completionQueue);
+		local.timeUnit = createObject("java", "java.util.concurrent.TimeUnit");
+		local.CFCDynamicProxy = instance.loader.create("com.compoundtheory.coldfusion.cfc.CFCDynamicProxy");
 
 
 		//guard... ensure the object works correctly when called directly
-		var sanity = createObject("component", "cfc.ThingieDoer").init(1, "normal old thingiedoer");
-		var result = sanity.call();
-		assertTrue( result.success );
-		assertFalse( structKeyExists(result, "error") );
+		local.sanity = createObject("component", "cfc.ThingieDoer").init(1, "normal old thingiedoer");
+		local.result = local.sanity.call();
+		assertTrue( local.result.success );
+		assertFalse( structKeyExists(local.result, "error") );
 
 		//now move on to the real test
-		var interfaces = ["java.util.concurrent.Callable"];
-		var thingieDoer = createObject("component", "cfc.ThingieDoer").init(1 , "name 1" );
-		var thingieProxy = CFCDynamicProxy.createInstance(thingieDoer, interfaces);
+		local.interfaces = ["java.util.concurrent.Callable"];
+		local.thingieDoer = createObject("component", "cfc.ThingieDoer").init(1 , "name 1" );
+		local.thingieProxy = local.CFCDynamicProxy.createInstance(local.thingieDoer, local.interfaces);
 
 		//submit the proxy. This should cause the completionService to run it immediately;
-		completionService.submit( thingieProxy ); //this doesn't error, but the call() method never gets run
+		local.completionService.submit( local.thingieProxy ); //this doesn't error, but the call() method never gets run
 
 		//ensure what we've submitted gets run, then shut down the service
-		executor.awaitTermination( javacast("int",1), timeUnit.SECONDS );
+		local.executor.awaitTermination( javacast("int",1), local.timeUnit.SECONDS );
 
 		//get the "future" object, which is the result of completionService running the proxy's call() method
-		var futureResult = completionService.poll();
+		local.futureResult = local.completionService.poll();
 
 		//boom
-		var callResult = futureResult.get();
-		assertTrue( callResult.success );
-		assertFalse( structKeyExists( callResult, "error" ) );
+		local.callResult = local.futureResult.get();
+		assertTrue( local.callResult.success );
+		assertFalse( structKeyExists( local.callResult, "error" ) );
 
     </cfscript>
 </cffunction>
