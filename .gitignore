@@ -5,3 +5,4 @@ settings.xml
 *.iml
 *.uuid
 java/networkClassLoader/bin/**
+docs/api/javaloader/**
