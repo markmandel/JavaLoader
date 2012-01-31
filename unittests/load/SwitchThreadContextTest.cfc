@@ -31,7 +31,7 @@
 
 <cffunction name="testPassUDFInWithCustomClassLoader" hint="pass in the UDF" access="public" returntype="void" output="false">
 	<cfscript>
-		var urlClassLoader = createObject("java", "java.net.URLClassLoader").init([]);
+		var urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
 
 		var classLoader = javaloader.switchThreadContextClassLoader(returnCurrentClassLoader, urlClassLoader);
 		assertSame(urlClassLoader, classLoader);
@@ -42,7 +42,7 @@
 	<cfscript>
 		var local = {};
 		local.class = getMetadata(this).name;
-		local.object = createObject("component", class);
+		local.object = createObject("component", local.class);
 
 		makePublic(local.object, "returnCurrentClassLoader");
 
@@ -56,8 +56,8 @@
 	<cfscript>
 		var local = {};
 		local.class = getMetadata(this).name;
-		local.object = createObject("component", class);
-		local.urlClassLoader = createObject("java", "java.net.URLClassLoader").init([]);
+		local.object = createObject("component", local.class);
+		local.urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
 
 		makePublic(local.object, "returnCurrentClassLoader");
 
