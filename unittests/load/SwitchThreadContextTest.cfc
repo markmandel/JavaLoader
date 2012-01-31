@@ -4,6 +4,7 @@
 
 <cffunction name="setup" hint="setup" access="public" returntype="void" output="false">
 	<cfscript>
+		super.setup();
 		paths = ArrayNew(1);
 		paths[1] = instance.libPath & "/helloworld.jar";
 
@@ -41,7 +42,7 @@
 	<cfscript>
 		var local = {};
 		local.class = getMetadata(this).name;
-		local.object = createObject("component", "class");
+		local.object = createObject("component", class);
 
 		makePublic(local.object, "returnCurrentClassLoader");
 
@@ -55,7 +56,7 @@
 	<cfscript>
 		var local = {};
 		local.class = getMetadata(this).name;
-		local.object = createObject("component", "class");
+		local.object = createObject("component", class);
 		local.urlClassLoader = createObject("java", "java.net.URLClassLoader").init([]);
 
 		makePublic(local.object, "returnCurrentClassLoader");

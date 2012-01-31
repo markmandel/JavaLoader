@@ -136,7 +136,7 @@ Purpose:    Utlitity class for loading Java Classes
 
 	<cftry>
 		<cfscript>
-			Thread.currentThread().setContextClassLoader(javaloader.getURLClassLoader());
+			Thread.currentThread().setContextClassLoader(classloader);
 		</cfscript>
 
 		<cfif isSimpleValue(arguments[1])>
