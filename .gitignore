@@ -1,0 +1,8 @@
+#ignore these files
+.*
+!.gitignore
+settings.xml
+*.iml
+*.uuid
+java/networkClassLoader/bin/**
+docs/api/javaloader/**
