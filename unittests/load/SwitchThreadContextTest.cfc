@@ -107,7 +107,7 @@
 		
 		local.result = javaloader.switchThreadContextClassLoader(local.object, "returnCurrentClassLoaderAndArguments", local.args);
 		assertSame(javaloader.getURLClassLoader(), local.result.classLoader);
-		assertStructEquals(args, local.result.args);
+		assertStructEquals(local.args, local.result.args);
 	</cfscript>
 </cffunction>
 
