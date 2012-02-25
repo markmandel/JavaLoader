@@ -179,22 +179,14 @@ Purpose:    Utlitity class for loading Java Classes
 		</cfscript>
 
 		<cfif isSimpleValue(arguments[1])>
-			<cfinvoke method="#arguments[1]#" returnvariable="local.return">
-				<cfloop collection="#local.funcArgs#" item="local.i">
-					<cfinvokeargument name="#local.i#" value="#local.funcArgs[local.i]#" />
-				</cfloop>
-			</cfinvoke>
+			<cfinvoke method="#arguments[1]#" returnvariable="local.return" argumentCollection="#local.funcArgs#" />
 		<cfelseif isCustomFunction(arguments[1])>
 			<cfscript>
 				local.func = arguments[1];
 				local.return = local.func(argumentCollection = funcArgs);
 			</cfscript>
 		<cfelseif isObject(arguments[1]) AND isSimpleValue(arguments[2])>
-			<cfinvoke component="#arguments[1]#" method="#arguments[2]#" returnvariable="local.return">
-				<cfloop collection="#local.funcArgs#" item="local.i">
-					<cfinvokeargument name="#local.i#" value="#local.funcArgs[local.i]#" />
-				</cfloop>
-			</cfinvoke>
+			<cfinvoke component="#arguments[1]#" method="#arguments[2]#" returnvariable="local.return" argumentCollection="#local.funcArgs#" />
 		<cfelse>
 			<cfthrow type="javaloader.InvalidInvocationException" message="Unable to determine what method to invoke" detail="Please check the documentation for switchThreadContextClassLoader."/>
 		</cfif>
