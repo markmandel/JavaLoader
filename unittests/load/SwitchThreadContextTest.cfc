@@ -67,6 +67,66 @@
 	</cfscript>
 </cffunction>
 
+<cffunction name="testMixinApproachWithArguments" hint="testing using the mixing" access="public" returntype="void" output="false">
+	<cfscript>
+		var mixin = javaloader.switchThreadContextClassLoader;
+		var args = { "arg1" = 1, "arg2" = 2};
+		var result = mixin("returnCurrentClassLoaderAndArguments", javaloader.getURLClassLoader(), args);
+		assertSame(javaloader.getURLClassLoader(), result.classLoader);
+		assertStructEquals(args, result.args);
+	</cfscript>
+</cffunction>
+
+<cffunction name="testPassUDFInWithArguments" hint="pass in a UDF with arguments" access="public" returntype="void" output="false">
+	<cfscript>
+		var args = { "arg1" = 1, "arg2" = 2};
+		var result = javaloader.switchThreadContextClassLoader(returnCurrentClassLoaderAndArguments, args);
+		assertSame(javaloader.getURLClassLoader(), result.classLoader);
+		assertStructEquals(args, result.args);
+	</cfscript>
+</cffunction>
+
+<cffunction name="testPassUDFInWithArgumentsWithCustomClassLoader" hint="pass in a UDF with arguments" access="public" returntype="void" output="false">
+	<cfscript>
+		var urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
+		var args = { "arg1" = 1, "arg2" = 2};
+		var result = javaloader.switchThreadContextClassLoader(returnCurrentClassLoaderAndArguments, urlClassLoader, args);
+		assertSame(urlClassLoader, result.classLoader);
+		assertStructEquals(args, result.args);
+	</cfscript>
+</cffunction>
+
+<cffunction name="testPassObjectAndMethodNameWithArguments" hint="pass in the object and method name with arguments" access="public" returntype="void" output="false">
+	<cfscript>
+		var local = {};
+		local.class = getMetadata(this).name;
+		local.object = createObject("component", local.class);
+		local.args = { "arg1" = 1, "arg2" = 2};
+		
+		makePublic(local.object, "returnCurrentClassLoaderAndArguments");
+		
+		local.result = javaloader.switchThreadContextClassLoader(local.object, "returnCurrentClassLoaderAndArguments", local.args);
+		assertSame(javaloader.getURLClassLoader(), local.result.classLoader);
+		assertStructEquals(args, local.result.args);
+	</cfscript>
+</cffunction>
+
+<cffunction name="testPassObjectAndMethodNameWithArgumentsWithCustomClassLoader" hint="pass in the object and method name with arguments, with a custom classloader" access="public" returntype="void" output="false">
+	<cfscript>
+		var local = {};
+		local.class = getMetadata(this).name;
+		local.object = createObject("component", local.class);
+		local.urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
+		local.args = { "arg1" = 1, "arg2" = 2};
+
+		makePublic(local.object, "returnCurrentClassLoaderAndArguments");
+
+		local.result = javaloader.switchThreadContextClassLoader(local.object, "returnCurrentClassLoaderAndArguments", local.urlClassLoader, local.args);
+		assertSame(local.urlClassLoader, local.result.classLoader);
+		assertStructEquals(local.args, local.result.args);
+	</cfscript>
+</cffunction>
+
 <!------------------------------------------- PACKAGE ------------------------------------------->
 
 <!------------------------------------------- PRIVATE ------------------------------------------->
@@ -75,6 +135,13 @@
 	<cfscript>
 		var Thread = createObject("java", "java.lang.Thread");
 		return Thread.currentThread().getContextClassLoader();
+	</cfscript>
+</cffunction>
+
+<cffunction name="returnCurrentClassLoaderAndArguments" hint="returns the current contexts classloader and any arguments passed in" access="private" returntype="any" output="false">
+	<cfscript>
+		var Thread = createObject("java", "java.lang.Thread");
+		return { "classLoader" = Thread.currentThread().getContextClassLoader(), args = arguments };
 	</cfscript>
 </cffunction>
 
