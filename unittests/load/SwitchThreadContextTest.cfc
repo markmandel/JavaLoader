@@ -71,7 +71,7 @@
 	<cfscript>
 		var mixin = javaloader.switchThreadContextClassLoader;
 		var args = { "arg1" = 1, "arg2" = 2};
-		var result = mixin("returnCurrentClassLoaderAndArguments", javaloader.getURLClassLoader(), args);
+		var result = mixin("returnCurrentClassLoaderAndArguments", args, javaloader.getURLClassLoader());
 		assertSame(javaloader.getURLClassLoader(), result.classLoader);
 		assertStructEquals(args, result.args);
 	</cfscript>
@@ -90,7 +90,7 @@
 	<cfscript>
 		var urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
 		var args = { "arg1" = 1, "arg2" = 2};
-		var result = javaloader.switchThreadContextClassLoader(returnCurrentClassLoaderAndArguments, urlClassLoader, args);
+		var result = javaloader.switchThreadContextClassLoader(returnCurrentClassLoaderAndArguments, args, urlClassLoader);
 		assertSame(urlClassLoader, result.classLoader);
 		assertStructEquals(args, result.args);
 	</cfscript>
@@ -121,7 +121,7 @@
 
 		makePublic(local.object, "returnCurrentClassLoaderAndArguments");
 
-		local.result = javaloader.switchThreadContextClassLoader(local.object, "returnCurrentClassLoaderAndArguments", local.urlClassLoader, local.args);
+		local.result = javaloader.switchThreadContextClassLoader(local.object, "returnCurrentClassLoaderAndArguments", local.args, local.urlClassLoader);
 		assertSame(local.urlClassLoader, local.result.classLoader);
 		assertStructEquals(local.args, local.result.args);
 	</cfscript>

@@ -104,9 +104,9 @@ Purpose:    Utlitity class for loading Java Classes
 	
 <cffunction name="switchThreadContextClassLoader" hint="Sometimes you will need to switch out the ThreadContextClassLoader with the classloader used by JavaLoader.<br/>
 			It has :
-			switchThreadContextClassLoader(function object, [classLoader=getURLClassLoader()], [struct function arguments])
-			switchThreadContextClassLoader(function name, [classLoader=getURLClassLoader()], [struct function arguments])
-			switchThreadContextClassLoader(object, function name, [classLoader=getURLClassLoader()], [struct function arguments])
+			switchThreadContextClassLoader(function object, [struct function arguments], [classLoader=getURLClassLoader()])
+			switchThreadContextClassLoader(function name, [struct function arguments], [classLoader=getURLClassLoader()])
+			switchThreadContextClassLoader(object, function name, [struct function arguments], [classLoader=getURLClassLoader()])
 			This method can be used in 3 different ways:
 			<ol>
 				<li>Pass it the UDF itself</li>
@@ -120,12 +120,12 @@ Purpose:    Utlitity class for loading Java Classes
 		var Thread = createObject("java", "java.lang.Thread");
 		var currentClassloader = Thread.currentThread().getContextClassLoader();
 		var classLoader = "";
-		
+
 		if (structCount(arguments) == 4) 
 		{	
-			// the last 2 arguments are the classloader and function arguments
-			classLoader = arguments[3];
-			local.funcArgs = arguments[4];	
+			// the last 2 arguments are the function arguments and class loader
+			classLoader = arguments[4];
+			local.funcArgs = arguments[3];
 		} 
 		else if (structCount(arguments) == 3) 
 		{	
