@@ -70,7 +70,7 @@
 <cffunction name="testMixinApproachWithArguments" hint="testing using the mixing" access="public" returntype="void" output="false">
 	<cfscript>
 		var mixin = javaloader.switchThreadContextClassLoader;
-		var args = { "arg1" = 1, "arg2" = 2};
+		var args = { arg1 = 1, arg2 = 2};
 		var result = mixin("returnCurrentClassLoaderAndArguments", args, javaloader.getURLClassLoader());
 		assertSame(javaloader.getURLClassLoader(), result.classLoader);
 		assertStructEquals(args, result.args);
@@ -79,7 +79,7 @@
 
 <cffunction name="testPassUDFInWithArguments" hint="pass in a UDF with arguments" access="public" returntype="void" output="false">
 	<cfscript>
-		var args = { "arg1" = 1, "arg2" = 2};
+		var args = { arg1 = 1, arg2 = 2};
 		var result = javaloader.switchThreadContextClassLoader(returnCurrentClassLoaderAndArguments, args);
 		assertSame(javaloader.getURLClassLoader(), result.classLoader);
 		assertStructEquals(args, result.args);
@@ -89,7 +89,7 @@
 <cffunction name="testPassUDFInWithArgumentsWithCustomClassLoader" hint="pass in a UDF with arguments" access="public" returntype="void" output="false">
 	<cfscript>
 		var urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
-		var args = { "arg1" = 1, "arg2" = 2};
+		var args = { arg1 = 1, arg2 = 2};
 		var result = javaloader.switchThreadContextClassLoader(returnCurrentClassLoaderAndArguments, args, urlClassLoader);
 		assertSame(urlClassLoader, result.classLoader);
 		assertStructEquals(args, result.args);
@@ -101,7 +101,7 @@
 		var local = {};
 		local.class = getMetadata(this).name;
 		local.object = createObject("component", local.class);
-		local.args = { "arg1" = 1, "arg2" = 2};
+		local.args = { arg1 = 1, arg2 = 2};
 		
 		makePublic(local.object, "returnCurrentClassLoaderAndArguments");
 		
@@ -117,7 +117,7 @@
 		local.class = getMetadata(this).name;
 		local.object = createObject("component", local.class);
 		local.urlClassLoader = createObject("java", "java.net.URLClassLoader").init(ArrayNew(1));
-		local.args = { "arg1" = 1, "arg2" = 2};
+		local.args = { arg1 = 1, arg2 = 2};
 
 		makePublic(local.object, "returnCurrentClassLoaderAndArguments");
 
@@ -141,7 +141,8 @@
 <cffunction name="returnCurrentClassLoaderAndArguments" hint="returns the current contexts classloader and any arguments passed in" access="private" returntype="any" output="false">
 	<cfscript>
 		var Thread = createObject("java", "java.lang.Thread");
-		return { "classLoader" = Thread.currentThread().getContextClassLoader(), args = arguments };
+		var result = { classLoader = Thread.currentThread().getContextClassLoader(), args = arguments };
+		return result;
 	</cfscript>
 </cffunction>
 

@@ -116,6 +116,7 @@ Purpose:    Utlitity class for loading Java Classes
 			access="public" returntype="any" output="false">
 	<cfscript>
 		var local = {};
+		var func = 0; //need this as cf8 doesn't like the structure with functions.
 		var System = createObject("java", "java.lang.System");
 		var Thread = createObject("java", "java.lang.Thread");
 		var currentClassloader = Thread.currentThread().getContextClassLoader();
@@ -182,8 +183,8 @@ Purpose:    Utlitity class for loading Java Classes
 			<cfinvoke method="#arguments[1]#" returnvariable="local.return" argumentCollection="#local.funcArgs#" />
 		<cfelseif isCustomFunction(arguments[1])>
 			<cfscript>
-				local.func = arguments[1];
-				local.return = local.func(argumentCollection = funcArgs);
+				func = arguments[1];
+				local.return = func(argumentCollection = local.funcArgs);
 			</cfscript>
 		<cfelseif isObject(arguments[1]) AND isSimpleValue(arguments[2])>
 			<cfinvoke component="#arguments[1]#" method="#arguments[2]#" returnvariable="local.return" argumentCollection="#local.funcArgs#" />
