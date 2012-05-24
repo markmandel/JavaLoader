@@ -315,7 +315,7 @@ Purpose:    Utlitity class for loading Java Classes
 			for(; counter lte len; counter = counter + 1)
 			{
 				dir = directories[counter];
-				directoryCopy(dir, path);
+				$directoryCopy(dir, path);
 			}
 
 			//then we compile it, and grab that jar
@@ -584,7 +584,7 @@ Copies a directory.
 @author Joe Rinehart (joe.rinehart@gmail.com)
 @version 1, July 27, 2005
 --->
-<cffunction name="directoryCopy" access="private" output="true">
+<cffunction name="$directoryCopy" access="private" output="true">
     <cfargument name="source" required="true" type="string">
     <cfargument name="destination" required="true" type="string">
     <cfargument name="nameconflict" required="true" default="overwrite">
@@ -602,7 +602,7 @@ Copies a directory.
         <cfif contents.type eq "file">
             <cffile action="copy" source="#arguments.source#/#name#" destination="#arguments.destination#/#name#" nameconflict="#arguments.nameConflict#">
         <cfelseif contents.type eq "dir">
-            <cfset directoryCopy(arguments.source & dirDelim & name, arguments.destination & dirDelim & name) />
+            <cfset $directoryCopy(arguments.source & dirDelim & name, arguments.destination & dirDelim & name) />
         </cfif>
     </cfloop>
 </cffunction>
