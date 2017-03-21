@@ -17,7 +17,6 @@ Purpose:    Utlitity class for loading Java Classes
 	instance.static.uuid = "A0608BEC-0AEB-B46A-0E1E1EC5F3CE7C9C";
 </cfscript>
 
-<cfimport taglib="tags" prefix="jl">
 
 <!------------------------------------------- PUBLIC ------------------------------------------->
 
@@ -370,10 +369,9 @@ Purpose:    Utlitity class for loading Java Classes
 		var counter = 0;
     </cfscript>
 
-	<!--- cf7 syntax. Yuck. --->
 	<cfloop from="1" to="#len#" index="counter">
 		<cfset dir = directories[counter]>
-		<jl:directory action="list" directory="#dir#" recurse="true"
+		<cfdirectory action="list" directory="#dir#" recurse="true"
 					type="file"
 					sort="dateLastModified desc"
 					name="qLastModified">

@@ -1,4 +1,4 @@
-JavaLoader 1.1
+JavaLoader 1.2
 ==============
 
 JavaLoader is a library that has been built to ease the use, development and integration of Java within ColdFusion applications.
